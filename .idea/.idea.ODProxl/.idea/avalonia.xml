@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="ODProxl/App.axaml" value="ODProxl/ODProxl.csproj" />
+        <entry key="ODProxl/Dialogs/LoginDialog.axaml" value="ODProxl/ODProxl.csproj" />
+        <entry key="ODProxl/Pages/HomePage.axaml" value="ODProxl/ODProxl.csproj" />
+        <entry key="ODProxl/Pages/LoginPage.axaml" value="ODProxl/ODProxl.csproj" />
+        <entry key="ODProxl/Pages/MainWin.axaml" value="ODProxl/ODProxl.csproj" />
+      </map>
+    </option>
+  </component>
+</project>
