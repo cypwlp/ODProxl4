@@ -1,17 +1,21 @@
 ﻿using System.Net;
 using Newtonsoft.Json;
+using ODProxl.ClientServices;
 using RestSharp;
 
 namespace ODProxl.Utils.HttpService;
 
-public class HttpRestClient
+public class HttpRestClient : IHttpRestClient
 {
     private readonly RestClient _client;
-    private readonly string baseUrl = "https://localhost:44364/api/";
+    private readonly string _baseUrl;
+    private readonly IAuthService _authService;
 
-    public HttpRestClient(RestClient client)
+    public HttpRestClient(RestClient client, string baseUrl, IAuthService authService)
     {
         _client = client;
+        _baseUrl = baseUrl;
+        _authService = authService;
     }
 
     /// <summary>
@@ -23,10 +27,14 @@ public class HttpRestClient
     public async Task<ClientResponse<T>> ExecuteAsync<T>(ClientRequest clientRequest)
     {
         // 拼接完整请求地址（不再依赖 RestClient 的 BaseUrl）
-        string fullUrl = baseUrl + clientRequest.Url;
+        string fullUrl = _baseUrl + clientRequest.Url;
         var request = new RestRequest(fullUrl, clientRequest.Method);
 
         request.AddHeader("Content-Type", clientRequest.ContentType);
+        if (!string.IsNullOrEmpty(_authService.CurrentUser?.Token))
+        {
+            request.AddHeader("Authorization", $"Bearer {_authService.CurrentUser.Token}");
+        }
 
         if (clientRequest.Parameters != null)
         {

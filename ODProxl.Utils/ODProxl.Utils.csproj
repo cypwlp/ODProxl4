@@ -18,4 +18,10 @@
     <PackageReference Include="RestSharp" />
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ODProxl.ClientServices\ODProxl.ClientServices.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TreeNode\" />
+  </ItemGroup>
 </Project>

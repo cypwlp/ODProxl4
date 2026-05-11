@@ -5,9 +5,13 @@
       <map>
         <entry key="ODProxl/App.axaml" value="ODProxl/ODProxl.csproj" />
         <entry key="ODProxl/Dialogs/LoginDialog.axaml" value="ODProxl/ODProxl.csproj" />
+        <entry key="ODProxl/Dialogs/ModelClassDialog.axaml" value="ODProxl/ODProxl.csproj" />
+        <entry key="ODProxl/ExtendControls/IconActionButton.axaml" value="ODProxl/ODProxl.csproj" />
         <entry key="ODProxl/Pages/HomePage.axaml" value="ODProxl/ODProxl.csproj" />
         <entry key="ODProxl/Pages/LoginPage.axaml" value="ODProxl/ODProxl.csproj" />
         <entry key="ODProxl/Pages/MainWin.axaml" value="ODProxl/ODProxl.csproj" />
+        <entry key="ODProxl/Pages/ModelClassPage.axaml" value="ODProxl/ODProxl.csproj" />
+        <entry key="ODProxl/Pages/OnnxModelPage.axaml" value="ODProxl/ODProxl.csproj" />
       </map>
     </option>
   </component>

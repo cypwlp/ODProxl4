@@ -5,6 +5,7 @@ using Material.Styles.Controls;
 using Material.Styles.Models;
 using ODProxl.ClientDtos;
 using ODProxl.ClientServices;
+using ODProxl.Utils.Events;
 using ODProxl.Utils.HttpService;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -17,15 +18,24 @@ public class LoginPageViewModel : BindableBase, INavigationAware
 {
     private readonly IAuthService _authService;
     private readonly IRegionManager _regionManager;
+    private readonly IEventAggregator _eventAggregator;
+    private readonly IHttpRestClient _httpRestClient;
 
     private string _userName = "";
     private string _password = "";
     private bool _isBusy;
 
-    public LoginPageViewModel(IAuthService authService, IRegionManager regionManager)
+    public LoginPageViewModel(
+        IAuthService authService,
+        IRegionManager regionManager,
+        IEventAggregator eventAggregator,
+        IHttpRestClient httpRestClient
+    )
     {
         _authService = authService;
         _regionManager = regionManager;
+        _eventAggregator = eventAggregator;
+        _httpRestClient = httpRestClient;
         LoginCommand = new DelegateCommand(
             async () => await LoginAsync(),
             () => !IsBusy
@@ -63,7 +73,6 @@ public class LoginPageViewModel : BindableBase, INavigationAware
         IsBusy = true;
         try
         {
-            var httpClient = new HttpRestClient(new RestClient());
             var request = new ClientRequest
             {
                 Url = "Account/login",
@@ -72,7 +81,7 @@ public class LoginPageViewModel : BindableBase, INavigationAware
                 Parameters = new AccountDto { Username = UserName, Password = Password },
             };
 
-            var response = await httpClient.ExecuteAsync<LoginRequestDto>(request);
+            var response = await _httpRestClient.ExecuteAsync<LoginRequestDto>(request);
 
             if (response.IsSuccess && response.Data != null)
             {
@@ -84,12 +93,22 @@ public class LoginPageViewModel : BindableBase, INavigationAware
             }
             else
             {
-                ShowSnackbar("用戶名或密碼錯誤，請重試");
+                // ShowSnackbar("用戶名或密碼錯誤，請重試");
+                _eventAggregator
+                    .GetEvent<PubSubEvent<NotificationMessage>>()
+                    .Publish(
+                        new NotificationMessage(
+                            $"用戶名或密碼錯誤，請重試",
+                            NotificationType.Warning
+                        )
+                    );
             }
         }
         catch (Exception ex)
         {
-            ShowSnackbar($"登錄過程中發生錯誤: {ex.Message}");
+            _eventAggregator
+                .GetEvent<PubSubEvent<NotificationMessage>>()
+                .Publish(new NotificationMessage($"錯誤" + ex, NotificationType.Warning));
         }
         finally
         {

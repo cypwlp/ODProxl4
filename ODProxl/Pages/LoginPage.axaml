@@ -109,13 +109,5 @@
                         Margin="0,8,0,0"/>
             </Grid>
         </Border>
-
-        <md:SnackbarHost
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Bottom"
-            Margin="24,0,24,32"
-            HostName="LoginPageSnackbarHost"
-            MaxWidth="380"
-            ZIndex="1000" />
     </Grid>
 </UserControl>

@@ -1,0 +1,122 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="ODProxl.Dialogs.ModelClassDialog">
+
+    <Border Background="{DynamicResource MaterialCardBackgroundBrush}"
+            CornerRadius="12"
+            Margin="16"
+            Padding="24"
+            BoxShadow="0 8 24 0 #20000000">
+        
+        <Grid RowDefinitions="Auto, *, *">
+            
+            <!-- 搜索区域 -->
+            <TextBox Name="SearchBox"
+                     Grid.Row="0"
+                     HorizontalAlignment="Left"
+                     MaxWidth="600"
+                     Margin="0,0,0,16"
+                     Watermark="搜尋模型名稱..."
+                     Text="{Binding SearchText}"
+                     CornerRadius="24"
+                     Classes="solo">
+                <TextBox.InnerLeftContent>
+                    <avalonia:MaterialIcon Kind="Magnify"
+                                           Width="20" Height="20"
+                                           Margin="14,0,0,0"
+                                           Foreground="{DynamicResource MaterialForegroundBrush}"/>
+                </TextBox.InnerLeftContent>
+                <TextBox.InnerRightContent>
+                    <Button Name="SearchButton"
+                            Width="38" Height="38"
+                            CornerRadius="19"
+                            Classes="flat"
+                            Command="{Binding SearchCommand}"
+                            CommandParameter="{Binding SearchText}">
+                        <avalonia:MaterialIcon Kind="ArrowRight" Width="20" Height="20"/>
+                    </Button>
+                </TextBox.InnerRightContent>
+            </TextBox>
+
+            <!-- 第一个 DataGrid（模型列表） -->
+            <Border Grid.Row="1"
+                    Margin="0,0,0,8"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource MaterialBorderBrush}"
+                    CornerRadius="8"
+                    Background="{DynamicResource MaterialPaperBrush}">
+                <DataGrid ItemsSource="{Binding BaseClasses}"
+                          SelectedItem="{Binding SelectedBaseClass}"
+                          AutoGenerateColumns="False"
+                          CanUserResizeColumns="True"
+                          CanUserSortColumns="True"
+                          HeadersVisibility="Column"
+                          Margin="8">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="序號" 
+                                            Binding="{Binding ClassSuffix}" 
+                                            Width="60" />
+                        <DataGridTextColumn Header="ID" 
+                                            Binding="{Binding ClassId}" 
+                                            Width="60" />
+                        <DataGridTextColumn Header="類別" 
+                                            Binding="{Binding ClassName}" 
+                                            Width="120" />
+                        <DataGridTextColumn Header="類型" 
+                                            Binding="{Binding ClassType}" 
+                                            Width="120" />
+                        <DataGridTextColumn Header="創建時間" 
+                                            Binding="{Binding CreateTime, StringFormat='yyyy-MM-dd HH:mm'}" 
+                                            Width="150" />
+                        <DataGridTextColumn Header="修改時間" 
+                                            Binding="{Binding ModifyTime, StringFormat='yyyy-MM-dd HH:mm'}" 
+                                            Width="150" />
+                        <DataGridTextColumn Header="是否啟用" 
+                                            Binding="{Binding IsEnabled}" 
+                                            Width="100" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- 第二个 DataGrid（项目列表） -->
+            <Border Grid.Row="2"
+                    Margin="0,8,0,0"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource MaterialBorderBrush}"
+                    CornerRadius="8"
+                    Background="{DynamicResource MaterialPaperBrush}">
+                <DataGrid ItemsSource="{Binding SubClasses}"
+                          AutoGenerateColumns="False"
+                          CanUserResizeColumns="True"
+                          CanUserSortColumns="True"
+                          HeadersVisibility="Column"
+                          Margin="8">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="序號" 
+                                            Binding="{Binding ClassSuffix}" 
+                                            Width="60" />
+                        <DataGridTextColumn Header="類別" 
+                                            Binding="{Binding ClassName}" 
+                                            Width="120" />
+                        <DataGridTextColumn Header="類型" 
+                                            Binding="{Binding ClassType}" 
+                                            Width="120" />
+                        <DataGridTextColumn Header="創建時間" 
+                                            Binding="{Binding CreateTime, StringFormat='yyyy-MM-dd HH:mm'}" 
+                                            Width="150" />
+                        <DataGridTextColumn Header="修改時間" 
+                                            Binding="{Binding ModifyTime, StringFormat='yyyy-MM-dd HH:mm'}" 
+                                            Width="150" />
+                        <DataGridTextColumn Header="是否啟用" 
+                                            Binding="{Binding IsEnabled}" 
+                                            Width="100" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

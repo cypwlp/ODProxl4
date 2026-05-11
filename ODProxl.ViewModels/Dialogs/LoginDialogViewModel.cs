@@ -27,11 +27,13 @@ public class LoginDialogViewModel : BindableBase, IDialogAware
     private string _password;
     private IDialogService _dialogService;
     private LoginRequestDto _loginRequestDto;
+    private readonly IHttpRestClient _httpClient;
     public DelegateCommand LoginCommand { get; }
 
-    public LoginDialogViewModel(IDialogService dialogService)
+    public LoginDialogViewModel(IDialogService dialogService, IHttpRestClient httpClient)
     {
         _dialogService = dialogService;
+        _httpClient = httpClient;
         LoginCommand = new DelegateCommand(async () => await LoginAsync());
     }
 
@@ -62,7 +64,6 @@ public class LoginDialogViewModel : BindableBase, IDialogAware
     {
         if (string.IsNullOrWhiteSpace(UserName) || string.IsNullOrWhiteSpace(Password))
             return;
-        var httpClient = new HttpRestClient(new RestClient());
         var request = new ClientRequest
         {
             Url = "Account/login",
@@ -70,7 +71,7 @@ public class LoginDialogViewModel : BindableBase, IDialogAware
             ContentType = "application/json",
             Parameters = new AccountDto { Username = UserName, Password = Password },
         };
-        var response = await httpClient.ExecuteAsync<LoginRequestDto>(request);
+        var response = await _httpClient.ExecuteAsync<LoginRequestDto>(request);
         await Task.Delay(200);
         try
         {

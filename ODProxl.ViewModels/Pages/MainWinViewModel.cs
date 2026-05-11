@@ -175,7 +175,7 @@ namespace ODProxl.ViewModels.Pages
                         {
                             Icon = MaterialIconKind.GlobeModel,
                             Title = "模型管理",
-                            ViewName = "OnnxModelMSPage",
+                            ViewName = "OnnxModelPage",
                             LimitUserName = new ObservableCollection<string> { "AllUser" },
                         },
                         new LeftMenuItem

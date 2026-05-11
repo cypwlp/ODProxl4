@@ -6,17 +6,17 @@ public class HomePageViewModel : BindableBase, INavigationAware
 
     public void OnNavigatedTo(NavigationContext navigationContext)
     {
-        throw new NotImplementedException();
+      
     }
 
     public bool IsNavigationTarget(NavigationContext navigationContext)
     {
-        throw new NotImplementedException();
+        return true;
     }
 
     public void OnNavigatedFrom(NavigationContext navigationContext)
     {
-        throw new NotImplementedException();
+    
     }
 
     #endregion

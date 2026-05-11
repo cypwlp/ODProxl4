@@ -2,8 +2,10 @@ using Avalonia;
 using Avalonia.Markup.Xaml;
 using ODProxl.ClientServices;
 using ODProxl.ClientServices.Impls;
+using ODProxl.Dialogs;
 using ODProxl.Pages;
 using ODProxl.Utils.HttpService;
+using ODProxl.ViewModels.Dialogs;
 using ODProxl.ViewModels.Pages;
 using Prism.DryIoc;
 using Prism.Ioc;
@@ -24,12 +26,18 @@ namespace ODProxl
         {
             // 全局服務（單例）
             containerRegistry.RegisterSingleton<IAuthService, AuthService>();
-            containerRegistry.Register<HttpRestClient>(() => new HttpRestClient(new RestClient()));
+            containerRegistry.RegisterSingleton<IHttpRestClient>(sp => new HttpRestClient(
+                new RestClient(),
+                "https://localhost:44364/api/",
+                sp.Resolve<IAuthService>()
+            ));
 
             // 頁面註冊
             containerRegistry.RegisterForNavigation<LoginPage, LoginPageViewModel>();
             containerRegistry.RegisterForNavigation<HomePage, HomePageViewModel>();
             containerRegistry.RegisterForNavigation<MainWin, MainWinViewModel>();
+            containerRegistry.RegisterForNavigation<OnnxModelPage, OnnxModelPageViewModel>();
+            containerRegistry.RegisterForNavigation<ModelClassDialog, ModelClassDialogViewModel>();
             // 其他頁面陸續加在這裡
         }
 
@@ -43,8 +51,6 @@ namespace ODProxl
         protected override void OnInitialized()
         {
             base.OnInitialized();
-
-            // Shell 已就緒，Region 已註冊，在這裡直接導航
             var regionManager = Container.Resolve<IRegionManager>();
             regionManager.RequestNavigate("MainRegion", "LoginPage");
         }
