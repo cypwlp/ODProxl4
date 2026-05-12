@@ -1,10 +1,8 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using ODProxl.Utils.Extends;
 
 namespace ODProxl.Dialogs;
 
-public partial class ModelClassDialog : UserControl
+public partial class ModelClassDialog : DialogBase
 {
     public ModelClassDialog()
     {

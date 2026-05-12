@@ -1,263 +1,350 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        d:DesignWidth="1280"
-        d:DesignHeight="800"
-        x:Class="ODProxl.Pages.MainWin"
-        xmlns:prism="http://prismlibrary.com/"
-        xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
-        xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-        xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
-        xmlns:vm="using:ODProxl.ViewModels.Pages"
-        xmlns:converters="clr-namespace:ODProxl.Utils.Converters"
-        x:DataType="vm:MainWinViewModel"
-        WindowStartupLocation="CenterScreen"
-        prism:ViewModelLocator.AutoWireViewModel="False"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaTitleBarHeightHint="-1"
-        ExtendClientAreaChromeHints="NoChrome"
-        Width="1280"
-        Height="800"
-        Title="ODProxl">
-    <dialogHostAvalonia:DialogHost Identifier="MainDialogHost">
-        <Panel>
-            <DockPanel LastChildFill="True">
+﻿<Window
+    x:Class="ODProxl.Pages.MainWin"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+    xmlns:converters="clr-namespace:ODProxl.Utils.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
+    xmlns:vm="using:ODProxl.ViewModels.Pages"
+    Title="ODProxl"
+    Width="1280"
+    Height="800"
+    MinWidth="1024"
+    MinHeight="680"
+    d:DesignHeight="800"
+    d:DesignWidth="1280"
+    prism:ViewModelLocator.AutoWireViewModel="False"
+    x:DataType="vm:MainWinViewModel"
+    ExtendClientAreaChromeHints="NoChrome"
+    ExtendClientAreaTitleBarHeightHint="-1"
+    ExtendClientAreaToDecorationsHint="True"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
 
-                <!-- ============== 頂部標題列：僅登錄後顯示 ============== -->
-                <controls:ColorZone Mode="PrimaryMid"
+	<dialogHostAvalonia:DialogHost Identifier="MainDialogHost">
+		<Panel>
+			<DockPanel LastChildFill="True">
+
+				<!--  ============== 頂部標題列：僅登錄後顯示 ==============  -->
+				<controls:ColorZone
+                    Height="56"
+                    DockPanel.Dock="Top"
+                    IsVisible="{Binding IsAuthenticated}"
+                    Mode="PrimaryMid"
+                    PointerPressed="Header_PointerPressed"
+                    ZIndex="1">
+					<Grid Margin="16,0,0,0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+
+						<!--  左側：菜單按鈕、前進後退、頁面標題  -->
+						<StackPanel
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+							<ToggleButton
+                                Width="32"
+                                Height="32"
+                                Padding="4"
+                                IsChecked="{Binding IsMenuExpanded, Mode=TwoWay}"
+                                Theme="{StaticResource MaterialFlatButton}">
+								<avalonia:MaterialIcon
+                                    Width="24"
+                                    Height="24"
+                                    Kind="Menu" />
+							</ToggleButton>
+							<Button Command="{Binding BackCommand}" Theme="{StaticResource MaterialFlatButton}">
+								<avalonia:MaterialIcon
+                                    Width="24"
+                                    Height="24"
+                                    Kind="ArrowLeft" />
+							</Button>
+							<Button Command="{Binding ForwardCommand}" Theme="{StaticResource MaterialFlatButton}">
+								<avalonia:MaterialIcon
+                                    Width="24"
+                                    Height="24"
+                                    Kind="ArrowRight" />
+							</Button>
+							<TextBlock
+                                Margin="16,0,0,0"
+                                VerticalAlignment="Center"
+                                Classes="Headline6"
+                                Text="{Binding SelectedMenuItem.Title, FallbackValue='主頁'}" />
+						</StackPanel>
+
+						<!--  右側：用戶信息、更多選項、視窗控制  -->
+						<StackPanel
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+							<StackPanel
+                                Margin="0,0,10,0"
+                                Orientation="Horizontal"
+                                Spacing="8">
+								<Border
+                                    Width="32"
+                                    Height="32"
+                                    Background="Gray"
+                                    CornerRadius="16">
+									<Image Source="avares://ODProxl/Assets/avatar.png" Stretch="UniformToFill" />
+								</Border>
+								<TextBlock
+                                    VerticalAlignment="Center"
+                                    Foreground="White"
+                                    Text="{Binding Username}" />
+							</StackPanel>
+
+							<StackPanel Margin="0,10,0,0">
+								<Button
+                                    Width="40"
+                                    Height="40"
+                                    Padding="0"
+                                    Foreground="White"
+                                    Theme="{StaticResource MaterialFlatButton}"
+                                    ToolTip.Tip="更多選項">
+									<avalonia:MaterialIcon
+                                        Width="24"
+                                        Height="24"
+                                        Kind="DotsVertical" />
+									<Button.Flyout>
+										<MenuFlyout ItemsSource="{Binding FlyoutMenuItems}" />
+									</Button.Flyout>
+								</Button>
+							</StackPanel>
+
+							<StackPanel Orientation="Horizontal" Spacing="0">
+								<Button
+                                    x:Name="btnMin"
+                                    Width="46"
                                     Height="56"
-                                    DockPanel.Dock="Top"
-                                    ZIndex="1"
-                                    PointerPressed="Header_PointerPressed"
-                                    IsVisible="{Binding IsAuthenticated}">
-                    <Grid Margin="16,0,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
+                                    Click="btnMin_Click"
+                                    Theme="{StaticResource MaterialFlatButton}">
+									<avalonia:MaterialIcon
+                                        Width="20"
+                                        Height="20"
+                                        Kind="Minus" />
+								</Button>
+								<Button
+                                    x:Name="btnMax"
+                                    Width="46"
+                                    Height="56"
+                                    Click="btnMax_Click"
+                                    Theme="{StaticResource MaterialFlatButton}">
+									<avalonia:MaterialIcon
+                                        x:Name="MaxIcon"
+                                        Width="18"
+                                        Height="18"
+                                        Kind="WindowMaximize" />
+								</Button>
+								<Button
+                                    x:Name="btnClose"
+                                    Width="46"
+                                    Height="56"
+                                    Click="BtnClose_Click"
+                                    Foreground="White"
+                                    Theme="{StaticResource MaterialFlatButton}">
+									<Button.Styles>
+										<Style Selector="Button:pointerover">
+											<Setter Property="Background" Value="#E81123" />
+										</Style>
+									</Button.Styles>
+									<avalonia:MaterialIcon
+                                        Width="20"
+                                        Height="20"
+                                        Kind="Close" />
+								</Button>
+							</StackPanel>
+						</StackPanel>
+					</Grid>
+				</controls:ColorZone>
 
-                        <!-- 左側：菜單按鈕、前進後退、頁面標題 -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ToggleButton IsChecked="{Binding IsMenuExpanded, Mode=TwoWay}"
-                                          Theme="{StaticResource MaterialFlatButton}"
-                                          Width="32" Height="32" Padding="4">
-                                <avalonia:MaterialIcon Kind="Menu" Width="24" Height="24" />
-                            </ToggleButton>
-                            <Button Theme="{StaticResource MaterialFlatButton}" Command="{Binding BackCommand}">
-                                <avalonia:MaterialIcon Kind="ArrowLeft" Width="24" Height="24" />
-                            </Button>
-                            <Button Theme="{StaticResource MaterialFlatButton}" Command="{Binding ForwardCommand}">
-                                <avalonia:MaterialIcon Kind="ArrowRight" Width="24" Height="24" />
-                            </Button>
-                            <TextBlock Classes="Headline6"
-                                       Text="{Binding SelectedMenuItem.Title, FallbackValue='主頁'}"
-                                       VerticalAlignment="Center"
-                                       Margin="16,0,0,0" />
-                        </StackPanel>
+				<!--  未登錄時的最小窗口控制條  -->
+				<Grid
+                    Height="32"
+                    Background="Transparent"
+                    DockPanel.Dock="Top"
+                    IsVisible="{Binding !IsAuthenticated}"
+                    PointerPressed="Header_PointerPressed">
+					<StackPanel
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Spacing="0">
+						<Button
+                            Width="40"
+                            Height="32"
+                            Click="btnMin_Click"
+                            Foreground="#64748B"
+                            Theme="{StaticResource MaterialFlatButton}">
+							<avalonia:MaterialIcon
+                                Width="16"
+                                Height="16"
+                                Kind="Minus" />
+						</Button>
+						<Button
+                            Width="40"
+                            Height="32"
+                            Click="BtnClose_Click"
+                            Foreground="#64748B"
+                            Theme="{StaticResource MaterialFlatButton}">
+							<Button.Styles>
+								<Style Selector="Button:pointerover">
+									<Setter Property="Background" Value="#EF4444" />
+									<Setter Property="Foreground" Value="White" />
+								</Style>
+							</Button.Styles>
+							<avalonia:MaterialIcon
+                                Width="16"
+                                Height="16"
+                                Kind="Close" />
+						</Button>
+					</StackPanel>
+				</Grid>
 
-                        <!-- 右側：用戶信息、更多選項、視窗控制 -->
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,10,0">
-                                <Border Width="32" Height="32" CornerRadius="16" Background="Gray">
-                                    <Image Source="avares://ODProxl/Assets/avatar.png" Stretch="UniformToFill" />
-                                </Border>
-                                <TextBlock Text="{Binding Username}"
-                                           VerticalAlignment="Center"
-                                           Foreground="White" />
-                            </StackPanel>
+				<!--  左側菜單抽屜  -->
+				<controls:NavigationDrawer
+                    Classes="permanent"
+                    DockPanel.Dock="Left"
+                    IsVisible="{Binding IsAuthenticated}"
+                    LeftDrawerOpened="{Binding IsMenuExpanded, Mode=TwoWay}"
+                    LeftDrawerWidth="190">
+					<controls:NavigationDrawer.LeftDrawerContent>
+						<ScrollViewer Width="190">
+							<StackPanel Width="190">
+								<controls:ColorZone Height="120" Mode="Accent">
+									<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+										<Image
+                                            Width="64"
+                                            Height="64"
+                                            Margin="0,0,0,8"
+                                            Source="avares://ODProxl/Assets/avalonia-logo.ico" />
+										<TextBlock
+                                            HorizontalAlignment="Center"
+                                            Classes="Headline6"
+                                            Text="Topmix.Ltd" />
+									</StackPanel>
+								</controls:ColorZone>
 
-                            <StackPanel Margin="0,10,0,0">
-                                <Button Theme="{StaticResource MaterialFlatButton}"
-                                        Width="40" Height="40"
-                                        Padding="0"
-                                        Foreground="White"
-                                        ToolTip.Tip="更多選項">
-                                    <avalonia:MaterialIcon Kind="DotsVertical" Width="24" Height="24" />
-                                    <Button.Flyout>
-                                        <MenuFlyout ItemsSource="{Binding FlyoutMenuItems}" />
-                                    </Button.Flyout>
-                                </Button>
-                            </StackPanel>
+								<TreeView
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    ItemsSource="{Binding MenuItems}"
+                                    SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}">
+									<TreeView.Styles>
+										<Style Selector="TreeViewItem">
+											<Setter Property="IsExpanded" Value="True" />
+											<Setter Property="Padding" Value="0" />
+											<Setter Property="MinHeight" Value="48" />
+										</Style>
+									</TreeView.Styles>
+									<TreeView.ItemTemplate>
+										<TreeDataTemplate ItemsSource="{Binding SubItems}">
+											<StackPanel
+                                                Height="48"
+                                                Margin="16,0"
+                                                Orientation="Horizontal"
+                                                Spacing="16">
+												<avalonia:MaterialIcon
+                                                    Width="24"
+                                                    Height="24"
+                                                    Kind="{Binding Icon}" />
+												<TextBlock VerticalAlignment="Center" Text="{Binding Title}" />
+											</StackPanel>
+										</TreeDataTemplate>
+									</TreeView.ItemTemplate>
+								</TreeView>
+							</StackPanel>
+						</ScrollViewer>
+					</controls:NavigationDrawer.LeftDrawerContent>
+				</controls:NavigationDrawer>
 
-                            <StackPanel Orientation="Horizontal" Spacing="0">
-                                <Button x:Name="btnMin"
-                                        Theme="{StaticResource MaterialFlatButton}"
-                                        Width="46" Height="56"
-                                        Click="btnMin_Click">
-                                    <avalonia:MaterialIcon Kind="Minus" Width="20" Height="20" />
-                                </Button>
-                                <Button x:Name="btnMax"
-                                        Theme="{StaticResource MaterialFlatButton}"
-                                        Width="46" Height="56"
-                                        Click="btnMax_Click">
-                                    <avalonia:MaterialIcon x:Name="MaxIcon" Kind="WindowMaximize" Width="18" Height="18" />
-                                </Button>
-                                <Button x:Name="btnClose"
-                                        Theme="{StaticResource MaterialFlatButton}"
-                                        Width="46" Height="56"
-                                        Foreground="White"
-                                        Click="BtnClose_Click">
-                                    <Button.Styles>
-                                        <Style Selector="Button:pointerover">
-                                            <Setter Property="Background" Value="#E81123" />
-                                        </Style>
-                                    </Button.Styles>
-                                    <avalonia:MaterialIcon Kind="Close" Width="20" Height="20" />
-                                </Button>
-                            </StackPanel>
-                        </StackPanel>
-                    </Grid>
-                </controls:ColorZone>
+				<!--  主要內容區域  -->
+				<ContentControl prism:RegionManager.RegionName="MainRegion" />
 
-                <!-- ============== 未登錄時的最小窗口控制條（沒有完整標題欄時，至少能關閉窗口） ============== -->
-                <Grid DockPanel.Dock="Top"
-                      Height="32"
-                      Background="Transparent"
-                      IsVisible="{Binding !IsAuthenticated}"
-                      PointerPressed="Header_PointerPressed">
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="0">
-                        <Button Theme="{StaticResource MaterialFlatButton}"
-                                Width="40" Height="32"
-                                Foreground="#64748B"
-                                Click="btnMin_Click">
-                            <avalonia:MaterialIcon Kind="Minus" Width="16" Height="16" />
-                        </Button>
-                        <Button Theme="{StaticResource MaterialFlatButton}"
-                                Width="40" Height="32"
-                                Foreground="#64748B"
-                                Click="BtnClose_Click">
-                            <Button.Styles>
-                                <Style Selector="Button:pointerover">
-                                    <Setter Property="Background" Value="#EF4444" />
-                                    <Setter Property="Foreground" Value="White" />
-                                </Style>
-                            </Button.Styles>
-                            <avalonia:MaterialIcon Kind="Close" Width="16" Height="16" />
-                        </Button>
-                    </StackPanel>
-                </Grid>
+			</DockPanel>
 
-                <!-- ============== 左側菜單抽屜：僅登錄後顯示 ============== -->
-                <controls:NavigationDrawer LeftDrawerOpened="{Binding IsMenuExpanded, Mode=TwoWay}"
-                                           Classes="permanent"
-                                           LeftDrawerWidth="190"
-                                           IsVisible="{Binding IsAuthenticated}"
-                                           DockPanel.Dock="Left">
-                    <controls:NavigationDrawer.LeftDrawerContent>
-                        <ScrollViewer Width="190">
-                            <StackPanel Width="190">
-                                <controls:ColorZone Mode="Accent" Height="120">
-                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Image Width="64" Height="64"
-                                               Source="avares://ODProxl/Assets/avalonia-logo.ico"
-                                               Margin="0,0,0,8" />
-                                        <TextBlock Classes="Headline6"
-                                                   Text="Topmix.Ltd"
-                                                   HorizontalAlignment="Center" />
-                                    </StackPanel>
-                                </controls:ColorZone>
+			<!--  Notification Overlay  -->
+			<ItemsControl
+                MaxWidth="560"
+                Margin="0,0,0,48"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                ItemsSource="{Binding Notifications.Notifications}"
+                ZIndex="999">
+				<!--  你的 Notification ItemTemplate 保持不變  -->
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Border
+                            Margin="0,8"
+                            Padding="16,14"
+                            BorderThickness="1"
+                            BoxShadow="0 8 20 0 #30000000"
+                            CornerRadius="8"
+                            Tag="{Binding Type}">
+							<Grid VerticalAlignment="Center" ColumnDefinitions="Auto,*,Auto,Auto">
+								<avalonia:MaterialIcon
+                                    Grid.Column="0"
+                                    Width="28"
+                                    Height="28"
+                                    Margin="0,0,16,0"
+                                    Foreground="White"
+                                    Kind="{Binding Type, Converter={StaticResource NotificationIconConverter}}" />
+								<TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    FontSize="14.5"
+                                    Foreground="White"
+                                    Text="{Binding Message}"
+                                    TextWrapping="Wrap" />
+								<Button
+                                    Grid.Column="2"
+                                    Margin="24,0,16,0"
+                                    Command="{Binding ActionCommand}"
+                                    Content="{Binding ActionText}"
+                                    Foreground="White"
+                                    IsVisible="{Binding ActionText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                    Theme="{DynamicResource MaterialFlatButton}" />
+								<Button
+                                    Grid.Column="3"
+                                    Padding="8,4"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Command="{Binding $parent[ItemsControl].DataContext.DismissCommand}"
+                                    CommandParameter="{Binding}"
+                                    Content="✕"
+                                    FontSize="16"
+                                    Foreground="White" />
+							</Grid>
+						</Border>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
 
-                                <TreeView ItemsSource="{Binding MenuItems}"
-                                          SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}"
-                                          Background="Transparent"
-                                          BorderThickness="0">
-                                    <TreeView.Styles>
-                                        <Style Selector="TreeViewItem">
-                                            <Setter Property="IsExpanded" Value="True" />
-                                            <Setter Property="Padding" Value="0" />
-                                            <Setter Property="MinHeight" Value="48" />
-                                        </Style>
-                                    </TreeView.Styles>
-                                    <TreeView.ItemTemplate>
-                                        <TreeDataTemplate ItemsSource="{Binding SubItems}">
-                                            <StackPanel Orientation="Horizontal" Height="48" Spacing="16" Margin="16,0">
-                                                <avalonia:MaterialIcon Kind="{Binding Icon}" Width="24" Height="24" />
-                                                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
-                                            </StackPanel>
-                                        </TreeDataTemplate>
-                                    </TreeView.ItemTemplate>
-                                </TreeView>
-                            </StackPanel>
-                        </ScrollViewer>
-                    </controls:NavigationDrawer.LeftDrawerContent>
-                </controls:NavigationDrawer>
+				<ItemsControl.Styles>
+					<Style Selector="Border[Tag=Info]">
+						<Setter Property="Background" Value="#2196F3" />
+						<Setter Property="BorderBrush" Value="#1976D2" />
+					</Style>
+					<Style Selector="Border[Tag=Success]">
+						<Setter Property="Background" Value="#4CAF50" />
+						<Setter Property="BorderBrush" Value="#388E3C" />
+					</Style>
+					<Style Selector="Border[Tag=Warning]">
+						<Setter Property="Background" Value="#FF9800" />
+						<Setter Property="BorderBrush" Value="#F57C00" />
+					</Style>
+					<Style Selector="Border[Tag=Error]">
+						<Setter Property="Background" Value="#F44336" />
+						<Setter Property="BorderBrush" Value="#D32F2F" />
+					</Style>
+				</ItemsControl.Styles>
+			</ItemsControl>
 
-                <!-- ============== 唯一的內容 Region（登錄頁和所有業務頁都從這裡顯示） ============== -->
-                <ContentControl prism:RegionManager.RegionName="MainRegion" />
-
-            </DockPanel>
-
-            <!-- ============== 自定義 Notification Overlay（覆蓋全窗口） ============== -->
-            <ItemsControl ItemsSource="{Binding Notifications.Notifications}"
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Bottom"
-                          Margin="0,0,0,48"
-                          MaxWidth="560"
-                          ZIndex="999">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border CornerRadius="8"
-                                Padding="16,14"
-                                Margin="0,8"
-                                BorderThickness="1"
-                                BoxShadow="0 8 20 0 #30000000"
-                                Tag="{Binding Type}">
-                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center">
-                                <avalonia:MaterialIcon Grid.Column="0"
-                                                       Kind="{Binding Type, Converter={StaticResource NotificationIconConverter}}"
-                                                       Width="28" Height="28"
-                                                       Margin="0,0,16,0"
-                                                       Foreground="White" />
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding Message}"
-                                           VerticalAlignment="Center"
-                                           TextWrapping="Wrap"
-                                           FontSize="14.5"
-                                           Foreground="White" />
-                                <Button Grid.Column="2"
-                                        Content="{Binding ActionText}"
-                                        Command="{Binding ActionCommand}"
-                                        IsVisible="{Binding ActionText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                        Margin="24,0,16,0"
-                                        Theme="{DynamicResource MaterialFlatButton}"
-                                        Foreground="White" />
-                                <Button Grid.Column="3"
-                                        Content="✕"
-                                        Command="{Binding $parent[ItemsControl].DataContext.DismissCommand}"
-                                        CommandParameter="{Binding}"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Padding="8,4"
-                                        FontSize="16"
-                                        Foreground="White" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-
-                <ItemsControl.Styles>
-                    <Style Selector="Border[Tag=Info]">
-                        <Setter Property="Background" Value="#2196F3" />
-                        <Setter Property="BorderBrush" Value="#1976D2" />
-                    </Style>
-                    <Style Selector="Border[Tag=Success]">
-                        <Setter Property="Background" Value="#4CAF50" />
-                        <Setter Property="BorderBrush" Value="#388E3C" />
-                    </Style>
-                    <Style Selector="Border[Tag=Warning]">
-                        <Setter Property="Background" Value="#FF9800" />
-                        <Setter Property="BorderBrush" Value="#F57C00" />
-                    </Style>
-                    <Style Selector="Border[Tag=Error]">
-                        <Setter Property="Background" Value="#F44336" />
-                        <Setter Property="BorderBrush" Value="#D32F2F" />
-                    </Style>
-                </ItemsControl.Styles>
-            </ItemsControl>
-
-        </Panel>
-    </dialogHostAvalonia:DialogHost>
+		</Panel>
+	</dialogHostAvalonia:DialogHost>
 </Window>

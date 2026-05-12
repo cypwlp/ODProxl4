@@ -1,0 +1,23 @@
+<UserControl
+    x:Class="ODProxl.ExtendControls.PageContainer"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="800"
+    d:DesignWidth="1200"
+    mc:Ignorable="d">
+
+	<Border
+        MaxWidth="1920"
+        MaxHeight="1200"
+        Margin="16"
+        Background="{DynamicResource MaterialCardBackgroundBrush}"
+        BoxShadow="0 10 32 0 #1A000000"
+        CornerRadius="16">
+
+		<Grid Margin="24">
+			<ContentPresenter Content="{Binding Content}" />
+		</Grid>
+	</Border>
+</UserControl>

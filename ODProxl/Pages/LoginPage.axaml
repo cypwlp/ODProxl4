@@ -9,16 +9,17 @@
              xmlns:prism="http://prismlibrary.com/"
              x:DataType="vm:LoginPageViewModel"
              x:Class="ODProxl.Pages.LoginPage">
-    <Grid Background="#F8FAFC">
-        <!-- 背景裝飾圓形 -->
-        <Canvas IsHitTestVisible="False">
-                <Ellipse Width="220" Height="220" Fill="#4F46E5" Opacity="0.06" Canvas.Left="-80" Canvas.Top="-60"/>
-                <Ellipse Width="280" Height="280" Fill="#10B981" Opacity="0.05" Canvas.Right="-80" Canvas.Bottom="-80"/>
-                <Ellipse Width="180" Height="180" Fill="#6366F1" Opacity="0.04" Canvas.Left="320" Canvas.Top="380"/>
-        </Canvas>
 
-        <!-- 主要登入卡片 -->
-        <Border Width="420" Height="580"
+	<Grid Background="#F8FAFC">
+		<!-- 背景裝飾圓形 -->
+		<Canvas IsHitTestVisible="False">
+			<Ellipse Width="220" Height="220" Fill="#4F46E5" Opacity="0.06" Canvas.Left="-80" Canvas.Top="-60"/>
+			<Ellipse Width="280" Height="280" Fill="#10B981" Opacity="0.05" Canvas.Right="-80" Canvas.Bottom="-80"/>
+			<Ellipse Width="180" Height="180" Fill="#6366F1" Opacity="0.04" Canvas.Left="320" Canvas.Top="380"/>
+		</Canvas>
+
+		<!-- 主要登入卡片 -->
+		<Border Width="420" Height="580"
                 Background="White"
                 CornerRadius="20"
                 HorizontalAlignment="Center"
@@ -26,27 +27,27 @@
                 BoxShadow="0 20 40 0 #1E293B20"
                 ClipToBounds="True">
 
-            <Grid Margin="48,48,48,48" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
+			<Grid Margin="48,48,48,48" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
 
-                <!-- 標題區域 -->
-                <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,36" Spacing="12">
-                    <Border Width="72" Height="72" Background="#4F46E5" CornerRadius="36" Margin="0,0,0,8"/>
-                    <TextBlock Text="拓脈匙目標檢測系統"
+				<!-- 標題區域 -->
+				<StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,36" Spacing="12">
+					<Border Width="72" Height="72" Background="#4F46E5" CornerRadius="36" Margin="0,0,0,8"/>
+					<TextBlock Text="拓脈匙目標檢測系統"
                                FontSize="28"
                                FontWeight="SemiBold"
                                Foreground="#1E293B"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="請輸入您的憑證以繼續"
+					<TextBlock Text="請輸入您的憑證以繼續"
                                FontSize="14.5"
                                Foreground="#64748B"
                                HorizontalAlignment="Center"/>
-                </StackPanel>
+				</StackPanel>
 
-                <!-- 用戶名 -->
-                <StackPanel Grid.Row="1" Margin="0,0,0,20" Spacing="6">
-                    <TextBlock Text="用戶名" FontSize="13.5" FontWeight="Medium" Foreground="#475569"/>
-                    <Border Background="#F8FAFC" CornerRadius="10" Padding="3">
-                        <TextBox x:Name="UserNameTextBox"
+				<!-- 用戶名 -->
+				<StackPanel Grid.Row="1" Margin="0,0,0,20" Spacing="6">
+					<TextBlock Text="用戶名" FontSize="13.5" FontWeight="Medium" Foreground="#475569"/>
+					<Border Background="#F8FAFC" CornerRadius="10" Padding="3">
+						<TextBox x:Name="UserNameTextBox"
                                  Text="{Binding UserName, Mode=TwoWay}"
                                  FontSize="15"
                                  Background="Transparent"
@@ -54,26 +55,26 @@
                                  CornerRadius="8"
                                  Padding="16,13"
                                  KeyDown="UserNameTextBox_KeyDown">
-                            <TextBox.Styles>
-                                <Style Selector="TextBox:focus">
-                                    <Setter Property="BorderBrush" Value="#4F46E5"/>
-                                    <Setter Property="Background" Value="White"/>
-                                </Style>
-                            </TextBox.Styles>
-                        </TextBox>
-                    </Border>
-                </StackPanel>
+							<TextBox.Styles>
+								<Style Selector="TextBox:focus">
+									<Setter Property="BorderBrush" Value="#4F46E5"/>
+									<Setter Property="Background" Value="White"/>
+								</Style>
+							</TextBox.Styles>
+						</TextBox>
+					</Border>
+				</StackPanel>
 
-                <!-- 密碼 -->
-                <StackPanel Grid.Row="2" Margin="0,0,0,20" Spacing="6">
-                    <Grid>
-                        <TextBlock Text="密碼" FontSize="13.5" FontWeight="Medium" Foreground="#475569"/>
-                        <TextBlock HorizontalAlignment="Right" Text="忘記密碼？"
+				<!-- 密碼 -->
+				<StackPanel Grid.Row="2" Margin="0,0,0,20" Spacing="6">
+					<Grid>
+						<TextBlock Text="密碼" FontSize="13.5" FontWeight="Medium" Foreground="#475569"/>
+						<TextBlock HorizontalAlignment="Right" Text="忘記密碼？"
                                    FontSize="13" Foreground="#4F46E5" Cursor="Hand"
                                    VerticalAlignment="Center"/>
-                    </Grid>
-                    <Border Background="#F8FAFC" CornerRadius="10" Padding="3">
-                        <TextBox x:Name="PasswordTextBox"
+					</Grid>
+					<Border Background="#F8FAFC" CornerRadius="10" Padding="3">
+						<TextBox x:Name="PasswordTextBox"
                                  Text="{Binding Password, Mode=TwoWay}"
                                  FontSize="15"
                                  Background="Transparent"
@@ -82,21 +83,21 @@
                                  PasswordChar="*"
                                  Padding="16,13"
                                  KeyDown="PasswordTextBox_KeyDown">
-                            <TextBox.Styles>
-                                <Style Selector="TextBox:focus">
-                                    <Setter Property="BorderBrush" Value="#4F46E5"/>
-                                    <Setter Property="Background" Value="White"/>
-                                </Style>
-                            </TextBox.Styles>
-                        </TextBox>
-                    </Border>
-                </StackPanel>
+							<TextBox.Styles>
+								<Style Selector="TextBox:focus">
+									<Setter Property="BorderBrush" Value="#4F46E5"/>
+									<Setter Property="Background" Value="White"/>
+								</Style>
+							</TextBox.Styles>
+						</TextBox>
+					</Border>
+				</StackPanel>
 
-                <!-- 記住我 -->
-                <CheckBox Grid.Row="3" Content="記住我" FontSize="14" Foreground="#64748B" Margin="0,4,0,12"/>
+				<!-- 記住我 -->
+				<CheckBox Grid.Row="3" Content="記住我" FontSize="14" Foreground="#64748B" Margin="0,4,0,12"/>
 
-                <!-- 登錄按鈕 -->
-                <Button Grid.Row="4"
+				<!-- 登錄按鈕 -->
+				<Button Grid.Row="4"
                         Command="{Binding LoginCommand}"
                         Content="登錄"
                         FontSize="16"
@@ -107,7 +108,7 @@
                         Height="52"
                         HorizontalAlignment="Stretch"
                         Margin="0,8,0,0"/>
-            </Grid>
-        </Border>
-    </Grid>
+			</Grid>
+		</Border>
+	</Grid>
 </UserControl>

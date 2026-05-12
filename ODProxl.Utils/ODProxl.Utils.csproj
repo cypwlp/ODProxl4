@@ -1,27 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Avalonia" />
-    <PackageReference Include="Prism.DryIoc.Avalonia" />
-    <PackageReference Include="Prism.Avalonia" />
-    <PackageReference Include="Material.Avalonia" />
-    <PackageReference Include="Microsoft.Data.SqlClient" />
-    <PackageReference Include="System.ServiceModel.Http" />
-    <PackageReference Include="System.ServiceModel.NetTcp" />
-    <PackageReference Include="System.ServiceModel.Primitives" />
-    <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="Material.Icons.Avalonia" />
-    <PackageReference Include="RestSharp" />
-    <PackageReference Include="Newtonsoft.Json" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ODProxl.ClientServices\ODProxl.ClientServices.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="TreeNode\" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia" />
+		<PackageReference Include="Prism.DryIoc.Avalonia" />
+		<PackageReference Include="Prism.Avalonia" />
+		<PackageReference Include="Material.Avalonia" />
+		<PackageReference Include="Microsoft.Data.SqlClient" />
+		<PackageReference Include="System.ServiceModel.Http" />
+		<PackageReference Include="System.ServiceModel.NetTcp" />
+		<PackageReference Include="System.ServiceModel.Primitives" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+		<PackageReference Include="Material.Icons.Avalonia" />
+		<PackageReference Include="RestSharp" />
+		<PackageReference Include="Newtonsoft.Json" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ODProxl.ClientServices\ODProxl.ClientServices.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="TreeNode\" />
+	</ItemGroup>
 </Project>

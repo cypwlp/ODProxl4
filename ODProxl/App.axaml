@@ -1,39 +1,41 @@
-<prism:PrismApplication xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="using:ODProxl.Utils.Converters"
-             x:Class="ODProxl.App"
-             xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
-             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:prism="http://prismlibrary.com/"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-             <Application.Resources>
-                 <converters:BoolToSizeConverter x:Key="BoolToSizeConverter"/>
-                 <converters:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter"/>
-                 <converters:ObjectEqualityConverter x:Key="ObjectEqualityConverter"/>
-                 <converters:BoolToMenuIconConverter x:Key="BoolToIconConverter"/>
-                 <converters:NotificationIconConverter x:Key="NotificationIconConverter" />
-                 <SolidColorBrush x:Key="MaterialCardBackgroundBrush" Color="#FFFCFCFF" />
-                 <SolidColorBrush x:Key="MaterialAltBackgroundBrush" Color="#F0F4FF" />
-                 <SolidColorBrush x:Key="MaterialHoverBackgroundBrush" Color="#E0E7FF" />
-                 <SolidColorBrush x:Key="MaterialDividerBrush" Color="#E0E0E0" />
-                 <SolidColorBrush x:Key="MaterialSecondaryForegroundBrush" Color="#6B7280" />
-             </Application.Resources>
+<prism:PrismApplication
+    x:Class="ODProxl.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:ODProxl.Utils.Converters"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:prism="http://prismlibrary.com/"
+    xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
+    RequestedThemeVariant="Default">
+	<!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
+	<Application.Resources>
+		<converters:BoolToSizeConverter x:Key="BoolToSizeConverter" />
+		<converters:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter" />
+		<converters:ObjectEqualityConverter x:Key="ObjectEqualityConverter" />
+		<converters:BoolToMenuIconConverter x:Key="BoolToIconConverter" />
+		<converters:NotificationIconConverter x:Key="NotificationIconConverter" />
+		<SolidColorBrush x:Key="MaterialCardBackgroundBrush" Color="#FFFCFCFF" />
+		<SolidColorBrush x:Key="MaterialAltBackgroundBrush" Color="#F0F4FF" />
+		<SolidColorBrush x:Key="MaterialHoverBackgroundBrush" Color="#E0E7FF" />
+		<SolidColorBrush x:Key="MaterialDividerBrush" Color="#E0E0E0" />
+		<SolidColorBrush x:Key="MaterialSecondaryForegroundBrush" Color="#6B7280" />
+	</Application.Resources>
 
-             <Application.Styles>
-                 <!-- 先載入 Fluent 主題 -->
-                 <FluentTheme />
-                 <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
-                 <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
-                 <themes:MaterialTheme BaseTheme="Light" 
-                                       PrimaryColor="DeepPurple" 
-                                       SecondaryColor="Teal" />
+	<Application.Styles>
+		<!--  先載入 Fluent 主題  -->
+		<FluentTheme />
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
+		<themes:MaterialTheme
+            BaseTheme="Light"
+            PrimaryColor="DeepPurple"
+            SecondaryColor="Teal" />
 
-                 <StyleInclude Source="avares://DialogHost.Avalonia/Styles.xaml"/>
-                 <materialIcons:MaterialIconStyles />
-                 <Style Selector="Window, UserControl">
-                     <Setter Property="FontFamily" Value="Microsoft YaHei, Segoe UI, sans-serif" />
-                 </Style>
+		<StyleInclude Source="avares://DialogHost.Avalonia/Styles.xaml" />
+		<materialIcons:MaterialIconStyles />
+		<Style Selector="Window, UserControl">
+			<Setter Property="FontFamily" Value="Microsoft YaHei, Segoe UI, sans-serif" />
+		</Style>
 
-             </Application.Styles>
+	</Application.Styles>
 </prism:PrismApplication>

@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Markup.Xaml;
 using ODProxl.ClientServices;
 using ODProxl.ClientServices.Impls;
 using ODProxl.Dialogs;
@@ -16,15 +15,8 @@ namespace ODProxl
 {
     public partial class App : PrismApplication
     {
-        public override void Initialize()
-        {
-            AvaloniaXamlLoader.Load(this);
-            base.Initialize();
-        }
-
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // 全局服務（單例）
             containerRegistry.RegisterSingleton<IAuthService, AuthService>();
             containerRegistry.RegisterSingleton<IHttpRestClient>(sp => new HttpRestClient(
                 new RestClient(),
@@ -32,13 +24,11 @@ namespace ODProxl
                 sp.Resolve<IAuthService>()
             ));
 
-            // 頁面註冊
             containerRegistry.RegisterForNavigation<LoginPage, LoginPageViewModel>();
             containerRegistry.RegisterForNavigation<HomePage, HomePageViewModel>();
             containerRegistry.RegisterForNavigation<MainWin, MainWinViewModel>();
             containerRegistry.RegisterForNavigation<OnnxModelPage, OnnxModelPageViewModel>();
             containerRegistry.RegisterForNavigation<ModelClassDialog, ModelClassDialogViewModel>();
-            // 其他頁面陸續加在這裡
         }
 
         protected override AvaloniaObject CreateShell()

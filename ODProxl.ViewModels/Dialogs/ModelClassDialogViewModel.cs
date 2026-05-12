@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using ODProxl.ClientDtos;
+﻿using ODProxl.ClientDtos;
 using ODProxl.Utils.HttpService;
-using Prism.Commands;
-using Prism.Mvvm;
 using RestSharp;
+using System.Collections.ObjectModel;
 
 namespace ODProxl.ViewModels.Dialogs;
 
@@ -26,19 +21,35 @@ public class ModelClassDialogViewModel : BindableBase, IDialogAware
 
     public DialogCloseListener RequestClose { get; }
 
+    public string Title => "模型類別管理";
     #endregion
 
     #region 字段 & 构造函数
     private int _modelId;
     private readonly IHttpRestClient _httpRestClient;
-    private ObservableCollection<ModelClassDto> _baseClasses;
-    private ObservableCollection<ModelClassDto> _subClasses;
+
+    // 完整原始資料
+    private ObservableCollection<ModelClassDto> _originalBaseClasses;
+    private ObservableCollection<ModelClassDto> _originalSubClasses;
+
+    // 顯示用過濾集合
+    private ObservableCollection<ModelClassDto> _filteredBaseClasses;
+    private ObservableCollection<ModelClassDto> _filteredSubClasses;
+
     private ModelClassDto _selectedBaseClass;
+    private string _searchText;
 
     public ModelClassDialogViewModel(IHttpRestClient httpRestClient)
     {
         _httpRestClient = httpRestClient;
         SearchText = string.Empty;
+
+        // 搜尋命令（點擊按鈕執行，也可在 SearchText setter 中即時觸發）
+        SearchCommand = new DelegateCommand<string>(ExecuteSearch);
+
+        // 初始化集合，避免 null
+        FilteredBaseClasses = new ObservableCollection<ModelClassDto>();
+        FilteredSubClasses = new ObservableCollection<ModelClassDto>();
     }
     #endregion
 
@@ -59,28 +70,42 @@ public class ModelClassDialogViewModel : BindableBase, IDialogAware
                 if (value != null)
                     _ = InitializeSubClassesAsync(value.ClassId);
                 else
-                    SubClasses?.Clear();
+                {
+                    _originalSubClasses = null;
+                    FilteredSubClasses = new ObservableCollection<ModelClassDto>();
+                }
             }
         }
     }
-    public ObservableCollection<ModelClassDto> BaseClasses
+
+    public ObservableCollection<ModelClassDto> FilteredBaseClasses
     {
-        get => _baseClasses;
-        set => SetProperty(ref _baseClasses, value);
+        get => _filteredBaseClasses;
+        set => SetProperty(ref _filteredBaseClasses, value);
     }
 
-    public ObservableCollection<ModelClassDto> SubClasses
+    public ObservableCollection<ModelClassDto> FilteredSubClasses
     {
-        get => _subClasses;
-        set => SetProperty(ref _subClasses, value);
+        get => _filteredSubClasses;
+        set => SetProperty(ref _filteredSubClasses, value);
     }
-    private string _searchText;
+
     public string SearchText
     {
         get => _searchText;
-        set => SetProperty(ref _searchText, value);
+        set
+        {
+            if (SetProperty(ref _searchText, value))
+            {
+                // 即時過濾（可選）
+                ApplyFilterToBaseClasses();
+                // 若子類別也有搜尋需求，可一併呼叫
+                ApplyFilterToSubClasses();
+            }
+        }
     }
-    public DelegateCommand SearchCommand { get; }
+
+    public DelegateCommand<string> SearchCommand { get; }
     #endregion
 
     #region 方法
@@ -98,7 +123,8 @@ public class ModelClassDialogViewModel : BindableBase, IDialogAware
         );
         if (response.IsSuccess)
         {
-            BaseClasses = response.Data;
+            _originalBaseClasses = response.Data;
+            ApplyFilterToBaseClasses();
         }
     }
 
@@ -115,10 +141,52 @@ public class ModelClassDialogViewModel : BindableBase, IDialogAware
         );
         if (response.IsSuccess)
         {
-            SubClasses = response.Data;
+            _originalSubClasses = response.Data;
+            ApplyFilterToSubClasses();
         }
     }
 
-    private void ExecuteSearch(string searchText) { }
+    private void ExecuteSearch(string _)
+    {
+        // 按鈕點擊時手動觸發過濾（與即時過濾重複，可依需求保留或移除）
+        ApplyFilterToBaseClasses();
+        ApplyFilterToSubClasses();
+    }
+
+    private void ApplyFilterToBaseClasses()
+    {
+        if (_originalBaseClasses == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            FilteredBaseClasses = new ObservableCollection<ModelClassDto>(_originalBaseClasses);
+        }
+        else
+        {
+            var filtered = _originalBaseClasses
+                .Where(x => x.ClassName.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            FilteredBaseClasses = new ObservableCollection<ModelClassDto>(filtered);
+        }
+    }
+
+    private void ApplyFilterToSubClasses()
+    {
+        if (_originalSubClasses == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            FilteredSubClasses = new ObservableCollection<ModelClassDto>(_originalSubClasses);
+        }
+        else
+        {
+            var filtered = _originalSubClasses
+                .Where(x => x.ClassName.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            FilteredSubClasses = new ObservableCollection<ModelClassDto>(filtered);
+        }
+    }
     #endregion
 }
