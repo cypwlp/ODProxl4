@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Material.Icons;
 using Material.Icons.Avalonia;
 using ODProxl.ClientCommonModels;
 using ODProxl.ClientServices;
 using ODProxl.Utils.Events;
-using Prism.Commands;
-using Prism.Events;
-using Prism.Mvvm;
-using Prism.Navigation.Regions;
+using System.Collections.ObjectModel;
 
 namespace ODProxl.ViewModels.Pages
 {
@@ -168,7 +161,7 @@ namespace ODProxl.ViewModels.Pages
                         {
                             Icon = MaterialIconKind.SmokeDetector,
                             Title = "數據標註",
-                            ViewName = "ClassMarkPage",
+                            ViewName = "AnnotationPage",
                             LimitUserName = new ObservableCollection<string> { "AllUser" },
                         },
                         new LeftMenuItem

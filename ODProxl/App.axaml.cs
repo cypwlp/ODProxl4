@@ -29,6 +29,7 @@ namespace ODProxl
             containerRegistry.RegisterForNavigation<MainWin, MainWinViewModel>();
             containerRegistry.RegisterForNavigation<OnnxModelPage, OnnxModelPageViewModel>();
             containerRegistry.RegisterForNavigation<ModelClassDialog, ModelClassDialogViewModel>();
+            containerRegistry.RegisterForNavigation<AnnotationPage, AnnotationPageViewModel>();
         }
 
         protected override AvaloniaObject CreateShell()
