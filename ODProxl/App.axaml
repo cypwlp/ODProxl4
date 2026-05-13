@@ -25,8 +25,7 @@
 		<!--  先載入 Fluent 主題  -->
 		<FluentTheme />
 		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
-		<!--<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />-->
-		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/TreeDataGrid.xaml" />
+		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
 		<themes:MaterialTheme
             BaseTheme="Light"
             PrimaryColor="DeepPurple"

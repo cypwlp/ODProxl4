@@ -215,10 +215,10 @@ namespace ODProxl.ViewModels.Pages
                 SelectedTreeItem = TreeSource.RowSelection.SelectedItem;
             };
         }
-
-        // 构建第一列控件（使用 Binding 或直接订阅事件，避免 GetObservable 依赖）
-        private Control BuildNodeNameControl(UnifiedTreeNode node)
+        private Control BuildNodeNameControl(UnifiedTreeNode? node)
         {
+            if (node == null) return new TextBlock { Text = "【空节点】" };
+
             var panel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 8 };
             var tb = new TextBox();
             switch (node.Type)
@@ -226,43 +226,48 @@ namespace ODProxl.ViewModels.Pages
                 case NodeType.Rule:
                     panel.Children.Add(new TextBlock { Text = $"规则 [{node.Id}]" });
                     tb.Text = node.Name;
-                    tb.TextChanged += (s, e) => node.Name = tb.Text;
+                    tb.TextChanged += (s, e) => { if (node != null) node.Name = tb.Text; };
                     panel.Children.Add(tb);
                     break;
                 case NodeType.Condition:
                     panel.Children.Add(new TextBlock { Text = $"条件 [{node.Id}]" });
                     tb.Text = node.Name;
-                    tb.TextChanged += (s, e) => node.Name = tb.Text;
+                    tb.TextChanged += (s, e) => { if (node != null) node.Name = tb.Text; };
                     panel.Children.Add(tb);
                     break;
                 case NodeType.Detail:
                     panel.Children.Add(new TextBlock { Text = $"明细 [{node.Id}]" });
                     tb.Text = node.Name;
-                    tb.TextChanged += (s, e) => node.Name = tb.Text;
+                    tb.TextChanged += (s, e) => { if (node != null) node.Name = tb.Text; };
                     panel.Children.Add(tb);
                     break;
+                default:
+                    return new TextBlock { Text = "未知节点类型" };
             }
             return panel;
         }
 
-        private Control BuildDetailControl(UnifiedTreeNode node)
+        private Control BuildDetailControl(UnifiedTreeNode? node)
         {
+            if (node == null) return new TextBlock();
+
             if (node.Type == NodeType.Condition)
             {
                 var panel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 4 };
                 var opCombo = new ComboBox { ItemsSource = Operators, SelectedItem = node.Operator, Width = 60 };
-                opCombo.SelectionChanged += (s, e) => node.Operator = opCombo.SelectedItem?.ToString();
+                opCombo.SelectionChanged += (s, e) => { if (node != null) node.Operator = opCombo.SelectedItem?.ToString(); };
                 panel.Children.Add(opCombo);
 
                 var valBox = new TextBox { Text = node.Value.ToString(), Width = 80 };
                 valBox.TextChanged += (s, e) =>
                 {
-                    if (decimal.TryParse(valBox.Text, out var dec)) node.Value = dec;
+                    if (node != null && decimal.TryParse(valBox.Text, out var dec))
+                        node.Value = dec;
                 };
                 panel.Children.Add(valBox);
 
                 var unitBox = new TextBox { Text = node.Unit, Width = 60 };
-                unitBox.TextChanged += (s, e) => node.Unit = unitBox.Text;
+                unitBox.TextChanged += (s, e) => { if (node != null) node.Unit = unitBox.Text; };
                 panel.Children.Add(unitBox);
                 return panel;
             }
@@ -270,23 +275,25 @@ namespace ODProxl.ViewModels.Pages
             {
                 var panel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 4 };
                 var valBox = new TextBox { Text = node.AttrValue, Width = 100 };
-                valBox.TextChanged += (s, e) => node.AttrValue = valBox.Text;
+                valBox.TextChanged += (s, e) => { if (node != null) node.AttrValue = valBox.Text; };
                 panel.Children.Add(valBox);
 
                 var unitBox = new TextBox { Text = node.AttrUnit, Width = 60 };
-                unitBox.TextChanged += (s, e) => node.AttrUnit = unitBox.Text;
+                unitBox.TextChanged += (s, e) => { if (node != null) node.AttrUnit = unitBox.Text; };
                 panel.Children.Add(unitBox);
                 return panel;
             }
             return new TextBlock();
         }
 
-        private Control BuildStatusControl(UnifiedTreeNode node)
+        private Control BuildStatusControl(UnifiedTreeNode? node)
         {
+            if (node == null) return new TextBlock();
+
             if (node.Type == NodeType.Rule)
             {
                 var chk = new CheckBox { IsChecked = node.IsActive };
-                chk.IsCheckedChanged += (s, e) => node.IsActive = chk.IsChecked ?? false;
+                chk.IsCheckedChanged += (s, e) => { if (node != null) node.IsActive = chk.IsChecked ?? false; };
                 return chk;
             }
             return new TextBlock();
