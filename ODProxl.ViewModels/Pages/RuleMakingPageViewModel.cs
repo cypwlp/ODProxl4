@@ -1,6 +1,8 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Templates;
+using Material.Icons;
+using Material.Icons.Avalonia;
 using ODProxl.ClientCommonModels.TreeNode;
 using ODProxl.ClientDtos;
 using ODProxl.ClientServices;
@@ -25,7 +27,7 @@ namespace ODProxl.ViewModels.Pages
         private readonly IAuthService _authService;
         private readonly IHttpRestClient _httpRestClient;
         private readonly IEventAggregator _eventAggregator;
-        private ObservableCollection<UnifiedTreeNode>? _rootNodes;  // 保存根节点引用
+        private ObservableCollection<UnifiedTreeNode>? _rootNodes;
 
         public RuleMakingPageViewModel(IAuthService authService, IHttpRestClient httpRestClient, IEventAggregator eventAggregator)
         {
@@ -178,11 +180,9 @@ namespace ODProxl.ViewModels.Pages
             }
 
             RebuildTreeSource();
-
             StatusText = "数据加载完成";
         }
 
-        // 重建 TreeDataGrid 源（当根节点集合改变时调用）
         private void RebuildTreeSource()
         {
             if (_rootNodes == null) return;
@@ -192,13 +192,13 @@ namespace ODProxl.ViewModels.Pages
                 Columns =
                 {
                     new HierarchicalExpanderColumn<UnifiedTreeNode>(
-                        new TemplateColumn<UnifiedTreeNode>("名称/ID",
+                        new TemplateColumn<UnifiedTreeNode>("名称 / ID",
                             new FuncDataTemplate<UnifiedTreeNode>((node, _) => BuildNodeNameControl(node)),
                             new FuncDataTemplate<UnifiedTreeNode>((node, _) => BuildNodeNameControl(node)),
                             null),
                         node => node.Children
                     ),
-                    new TemplateColumn<UnifiedTreeNode>("详细信息",
+                    new TemplateColumn<UnifiedTreeNode>("条件 / 明细",
                         new FuncDataTemplate<UnifiedTreeNode>((node, _) => BuildDetailControl(node)),
                         new FuncDataTemplate<UnifiedTreeNode>((node, _) => BuildDetailControl(node)),
                         null),
@@ -215,50 +215,123 @@ namespace ODProxl.ViewModels.Pages
                 SelectedTreeItem = TreeSource.RowSelection.SelectedItem;
             };
         }
+
+        // 返回節點對應的 Material Icon Kind
+        private static MaterialIconKind GetNodeIconKind(NodeType type) => type switch
+        {
+            NodeType.Rule => MaterialIconKind.ClipboardTextOutline,
+            NodeType.Condition => MaterialIconKind.CodeBraces,
+            NodeType.Detail => MaterialIconKind.FileDocumentEditOutline,
+            _ => MaterialIconKind.HelpCircle
+        };
+
+        // 名稱列模板
         private Control BuildNodeNameControl(UnifiedTreeNode? node)
         {
             if (node == null) return new TextBlock { Text = "【空节点】" };
 
-            var panel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 8 };
-            var tb = new TextBox();
-            switch (node.Type)
+            var icon = new MaterialIcon
             {
-                case NodeType.Rule:
-                    panel.Children.Add(new TextBlock { Text = $"规则 [{node.Id}]" });
-                    tb.Text = node.Name;
-                    tb.TextChanged += (s, e) => { if (node != null) node.Name = tb.Text; };
-                    panel.Children.Add(tb);
-                    break;
-                case NodeType.Condition:
-                    panel.Children.Add(new TextBlock { Text = $"条件 [{node.Id}]" });
-                    tb.Text = node.Name;
-                    tb.TextChanged += (s, e) => { if (node != null) node.Name = tb.Text; };
-                    panel.Children.Add(tb);
-                    break;
-                case NodeType.Detail:
-                    panel.Children.Add(new TextBlock { Text = $"明细 [{node.Id}]" });
-                    tb.Text = node.Name;
-                    tb.TextChanged += (s, e) => { if (node != null) node.Name = tb.Text; };
-                    panel.Children.Add(tb);
-                    break;
-                default:
-                    return new TextBlock { Text = "未知节点类型" };
-            }
+                Kind = GetNodeIconKind(node.Type),
+                Width = 20,
+                Height = 20,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Margin = new Avalonia.Thickness(4, 0, 8, 0)
+            };
+
+            var typeLabel = new TextBlock
+            {
+                Text = node.Type switch
+                {
+                    NodeType.Rule => "规则",
+                    NodeType.Condition => "条件",
+                    NodeType.Detail => "明细",
+                    _ => ""
+                },
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                Margin = new Avalonia.Thickness(0, 0, 8, 0)
+            };
+
+            var idLabel = new TextBlock
+            {
+                Text = $"[{node.Id}]",
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Foreground = Avalonia.Media.Brushes.Gray,
+                Margin = new Avalonia.Thickness(0, 0, 12, 0)
+            };
+
+            var nameBox = new TextBox
+            {
+                Text = node.Name,
+                MinWidth = 120,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            nameBox.Classes.Add("compact");
+            nameBox.TextChanged += (s, e) => { if (node != null) node.Name = nameBox.Text; };
+
+            var panel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Spacing = 4,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            panel.Children.Add(icon);
+            panel.Children.Add(typeLabel);
+            panel.Children.Add(idLabel);
+            panel.Children.Add(nameBox);
+
             return panel;
         }
 
+        // 條件 / 明細列模板
         private Control BuildDetailControl(UnifiedTreeNode? node)
         {
             if (node == null) return new TextBlock();
 
+            var panel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Spacing = 6,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+
             if (node.Type == NodeType.Condition)
             {
-                var panel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 4 };
-                var opCombo = new ComboBox { ItemsSource = Operators, SelectedItem = node.Operator, Width = 60 };
-                opCombo.SelectionChanged += (s, e) => { if (node != null) node.Operator = opCombo.SelectedItem?.ToString(); };
+                // 運算符
+                panel.Children.Add(new TextBlock
+                {
+                    Text = "运算符:",
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    Foreground = Avalonia.Media.Brushes.Gray
+                });
+                var opCombo = new ComboBox
+                {
+                    ItemsSource = Operators,
+                    SelectedItem = node.Operator,
+                    Width = 70,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                };
+                opCombo.SelectionChanged += (s, e) =>
+                {
+                    if (node != null) node.Operator = opCombo.SelectedItem?.ToString();
+                };
                 panel.Children.Add(opCombo);
 
-                var valBox = new TextBox { Text = node.Value.ToString(), Width = 80 };
+                // 值
+                panel.Children.Add(new TextBlock
+                {
+                    Text = "值:",
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    Foreground = Avalonia.Media.Brushes.Gray
+                });
+                var valBox = new TextBox
+                {
+                    Text = node.Value.ToString(),
+                    Width = 80,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                };
+                valBox.Classes.Add("compact");
                 valBox.TextChanged += (s, e) =>
                 {
                     if (node != null && decimal.TryParse(valBox.Text, out var dec))
@@ -266,36 +339,90 @@ namespace ODProxl.ViewModels.Pages
                 };
                 panel.Children.Add(valBox);
 
-                var unitBox = new TextBox { Text = node.Unit, Width = 60 };
+                // 單位
+                panel.Children.Add(new TextBlock
+                {
+                    Text = "单位:",
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    Foreground = Avalonia.Media.Brushes.Gray
+                });
+                var unitBox = new TextBox
+                {
+                    Text = node.Unit,
+                    Width = 60,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                };
+                unitBox.Classes.Add("compact");
                 unitBox.TextChanged += (s, e) => { if (node != null) node.Unit = unitBox.Text; };
                 panel.Children.Add(unitBox);
+
                 return panel;
             }
+
             if (node.Type == NodeType.Detail)
             {
-                var panel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 4 };
-                var valBox = new TextBox { Text = node.AttrValue, Width = 100 };
+                // 屬性值
+                panel.Children.Add(new TextBlock
+                {
+                    Text = "属性值:",
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    Foreground = Avalonia.Media.Brushes.Gray
+                });
+                var valBox = new TextBox
+                {
+                    Text = node.AttrValue,
+                    Width = 120,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                };
+                valBox.Classes.Add("compact");
                 valBox.TextChanged += (s, e) => { if (node != null) node.AttrValue = valBox.Text; };
                 panel.Children.Add(valBox);
 
-                var unitBox = new TextBox { Text = node.AttrUnit, Width = 60 };
+                // 單位
+                panel.Children.Add(new TextBlock
+                {
+                    Text = "单位:",
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    Foreground = Avalonia.Media.Brushes.Gray
+                });
+                var unitBox = new TextBox
+                {
+                    Text = node.AttrUnit,
+                    Width = 60,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                };
+                unitBox.Classes.Add("compact");
                 unitBox.TextChanged += (s, e) => { if (node != null) node.AttrUnit = unitBox.Text; };
                 panel.Children.Add(unitBox);
+
                 return panel;
             }
+
+            // 規則節點不顯示額外內容
             return new TextBlock();
         }
 
+        // 狀態列模板
         private Control BuildStatusControl(UnifiedTreeNode? node)
         {
             if (node == null) return new TextBlock();
 
             if (node.Type == NodeType.Rule)
             {
-                var chk = new CheckBox { IsChecked = node.IsActive };
-                chk.IsCheckedChanged += (s, e) => { if (node != null) node.IsActive = chk.IsChecked ?? false; };
-                return chk;
+                var toggle = new ToggleSwitch
+                {
+                    IsChecked = node.IsActive,
+                    OnContent = "启用",
+                    OffContent = "停用",
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                };
+                toggle.IsCheckedChanged += (s, e) =>
+                {
+                    if (node != null) node.IsActive = toggle.IsChecked ?? false;
+                };
+                return toggle;
             }
+
             return new TextBlock();
         }
         #endregion
@@ -329,7 +456,7 @@ namespace ODProxl.ViewModels.Pages
             if (_rootNodes == null) _rootNodes = new ObservableCollection<UnifiedTreeNode>();
             var newNode = new UnifiedTreeNode { Type = NodeType.Rule, Id = 0, Name = "新规则", IsActive = true };
             _rootNodes.Add(newNode);
-            RebuildTreeSource();  // 刷新UI
+            RebuildTreeSource();
             SelectedTreeItem = newNode;
             StatusText = "请填写规则内容后点击【保存全部】";
         }
@@ -426,7 +553,7 @@ namespace ODProxl.ViewModels.Pages
                 }
             }
             StatusText = "全部保存成功";
-            await LoadAllDataAsync();  // 重新加载，刷新ID等
+            await LoadAllDataAsync();
         }
 
         private void OnAddCondition()
@@ -443,7 +570,7 @@ namespace ODProxl.ViewModels.Pages
                     Unit = ""
                 };
                 node.Children.Add(newCond);
-                RebuildTreeSource();   // 刷新树
+                RebuildTreeSource();
                 SelectedTreeItem = newCond;
                 StatusText = "请填写条件内容后保存";
             }

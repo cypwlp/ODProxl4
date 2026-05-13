@@ -3,33 +3,54 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:treeDataGrid="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.TreeDataGrid"
     xmlns:vm="clr-namespace:ODProxl.ViewModels.Pages;assembly=ODProxl.ViewModels"
     d:DesignHeight="800"
     d:DesignWidth="1200"
-    x:DataType="vm:RuleMakingPageViewModel">
+    x:DataType="vm:RuleMakingPageViewModel"
+    mc:Ignorable="d">
+
 	<Grid RowDefinitions="Auto,*">
+		<!--  Toolbar  -->
 		<Border
             Grid.Row="0"
-            Padding="8"
+            Padding="12"
             Background="{DynamicResource MaterialCardBackgroundBrush}">
 			<StackPanel Orientation="Horizontal" Spacing="8">
-				<Button Command="{Binding AddRuleCommand}">➕ 新增规则</Button>
-				<Button Command="{Binding AddConditionCommand}">🔗 新增条件</Button>
-				<Button Command="{Binding AddDetailCommand}">📄 新增明细</Button>
-				<Button Command="{Binding DeleteSelectedCommand}">🗑️ 删除选中</Button>
+				<Button Command="{Binding AddRuleCommand}">➕ 新增規則</Button>
+				<Button Command="{Binding AddConditionCommand}">🔗 新增條件</Button>
+				<Button Command="{Binding AddDetailCommand}">📄 新增明細</Button>
+				<Button Command="{Binding DeleteSelectedCommand}">🗑️ 刪除選中</Button>
 				<Button
                     Background="Green"
                     Command="{Binding SaveAllCommand}"
                     Foreground="White">
 					💾 保存全部
 				</Button>
+
 				<TextBlock
                     Margin="20,0,0,0"
                     VerticalAlignment="Center"
                     Text="{Binding StatusText}" />
 			</StackPanel>
 		</Border>
-		<treeDataGrid:TreeDataGrid Grid.Row="1" Source="{Binding TreeSource}" />
+
+		<!--  TreeDataGrid  -->
+		<treeDataGrid:TreeDataGrid
+            Grid.Row="1"
+            CanUserResizeColumns="True"
+            CanUserSortColumns="False"
+            Source="{Binding TreeSource}">
+			<!--  移除 CanUserReorderColumns  -->
+
+			<!--  固定行高  -->
+			<treeDataGrid:TreeDataGrid.Styles>
+				<Style Selector="TreeDataGridRow">
+					<Setter Property="MinHeight" Value="44" />
+					<Setter Property="Height" Value="44" />
+				</Style>
+			</treeDataGrid:TreeDataGrid.Styles>
+		</treeDataGrid:TreeDataGrid>
 	</Grid>
 </UserControl>

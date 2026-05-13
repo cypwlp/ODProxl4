@@ -7,7 +7,6 @@
     xmlns:prism="http://prismlibrary.com/"
     xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
     RequestedThemeVariant="Default">
-	<!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
 	<Application.Resources>
 		<converters:BoolToSizeConverter x:Key="BoolToSizeConverter" />
 		<converters:BoolToAlignmentConverter x:Key="BoolToAlignmentConverter" />
@@ -19,10 +18,11 @@
 		<SolidColorBrush x:Key="MaterialHoverBackgroundBrush" Color="#E0E7FF" />
 		<SolidColorBrush x:Key="MaterialDividerBrush" Color="#E0E0E0" />
 		<SolidColorBrush x:Key="MaterialSecondaryForegroundBrush" Color="#6B7280" />
+		<SolidColorBrush x:Key="TreeDataGridSelectedBackground" Color="#E8DEF8" />
+		<SolidColorBrush x:Key="TreeDataGridHoverBackground" Color="#F3E5F5" />
 	</Application.Resources>
 
 	<Application.Styles>
-		<!--  先載入 Fluent 主題  -->
 		<FluentTheme />
 		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
 		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
@@ -33,9 +33,48 @@
 
 		<StyleInclude Source="avares://DialogHost.Avalonia/Styles.xaml" />
 		<materialIcons:MaterialIconStyles />
+
 		<Style Selector="Window, UserControl">
 			<Setter Property="FontFamily" Value="Microsoft YaHei, Segoe UI, sans-serif" />
 		</Style>
 
+		<!--  TreeDataGrid 行樣式 (替代原有錯誤屬性)  -->
+		<Style Selector="TreeDataGridRow">
+			<!--  預設行高（配合 TreeDataGrid.RowHeight 使用）  -->
+			<Setter Property="Height" Value="40" />
+		</Style>
+
+		<!--  選中行高亮  -->
+		<Style Selector="TreeDataGridRow:selected">
+			<Setter Property="Background" Value="{DynamicResource TreeDataGridSelectedBackground}" />
+		</Style>
+
+		<!--  滑鼠懸停高亮  -->
+		<Style Selector="TreeDataGridRow:pointerover">
+			<Setter Property="Background" Value="{DynamicResource TreeDataGridHoverBackground}" />
+		</Style>
+
+		<!--  交替行背景（透過 Index 奇偶判斷）  -->
+		<Style Selector="TreeDataGridRow:nth-child(even)">
+			<Setter Property="Background" Value="{DynamicResource MaterialAltBackgroundBrush}" />
+		</Style>
+
+		<!--  表頭樣式  -->
+		<Style Selector="TreeDataGridColumnHeader">
+			<Setter Property="Background" Value="{DynamicResource MaterialCardBackgroundBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource MaterialSecondaryForegroundBrush}" />
+			<Setter Property="Height" Value="36" />
+			<Setter Property="Padding" Value="8,0" />
+		</Style>
+
+		<!--  緊湊輸入框樣式  -->
+		<Style Selector="TextBox.compact">
+			<Setter Property="Padding" Value="6,2" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="BorderBrush" Value="{DynamicResource MaterialDividerBrush}" />
+			<Setter Property="CornerRadius" Value="4" />
+			<Setter Property="MinHeight" Value="28" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
 	</Application.Styles>
 </prism:PrismApplication>
