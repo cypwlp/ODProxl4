@@ -194,6 +194,19 @@ namespace ODProxl.ViewModels.Pages
                     LimitUserName = new ObservableCollection<string> { "AllUser" },
                     SubItems = new ObservableCollection<LeftMenuItem>
                     {
+                        new LeftMenuItem{
+                            Icon=MaterialIconKind.ChartProductionPossibilityFrontier,
+                            Title="產品管理",
+                            ViewName="ProductPage",
+                            LimitUserName=new ObservableCollection<string>{"AllUser"}
+                        },
+                        new LeftMenuItem
+                        {
+                            Icon=MaterialIconKind.Ruler,
+                            Title="規則設定",
+                            ViewName="RuleMakingPage",
+                            LimitUserName=new ObservableCollection<string>{"AllUser"}
+                        },
                         new LeftMenuItem
                         {
                             Icon = MaterialIconKind.Cog,

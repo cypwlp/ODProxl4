@@ -45,6 +45,9 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Remove="MainWindow.axaml.cs" />
+		<Compile Update="Dialogs\AddOrEditProductDialog.axaml.cs">
+			<DependentUpon>AddOrEditProductDialog.axaml</DependentUpon>
+		</Compile>
 		<Compile Update="Dialogs\ModelClassDialog.axaml.cs">
 			<DependentUpon>ModelClassDialog.axaml</DependentUpon>
 			<SubType>Code</SubType>

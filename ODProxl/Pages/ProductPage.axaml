@@ -1,0 +1,142 @@
+﻿<UserControl
+    x:Class="ODProxl.Pages.ProductPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extendControls="clr-namespace:ODProxl.ExtendControls;assembly=ODProxl"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:micons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:miconsEnum="clr-namespace:Material.Icons;assembly=Material.Icons"
+    xmlns:vm="clr-namespace:ODProxl.ViewModels.Pages;assembly=ODProxl.ViewModels"
+    d:DesignHeight="800"
+    d:DesignWidth="1200"
+    x:DataType="vm:ProductPageViewModel"
+    mc:Ignorable="d">
+
+	<extendControls:PageContainer>
+		<Grid RowDefinitions="Auto,*">
+
+			<!--  頁面標題與工具列  -->
+			<Border
+                Grid.Row="0"
+                Padding="16,12"
+                Background="{DynamicResource MaterialAltBackgroundBrush}"
+                CornerRadius="12,12,0,0">
+
+				<Grid ColumnDefinitions="*,Auto">
+					<StackPanel Orientation="Horizontal" Spacing="12">
+						<micons:MaterialIcon
+                            Width="28"
+                            Height="28"
+                            Foreground="{DynamicResource MaterialPrimaryBrush}"
+                            Kind="{x:Static miconsEnum:MaterialIconKind.PackageVariant}" />
+						<TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="24"
+                            FontWeight="Bold"
+                            Text="產品管理" />
+					</StackPanel>
+
+					<Button
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Classes="Filled"
+                        Command="{Binding AddProductCommand}"
+                        CornerRadius="8">
+						<StackPanel Orientation="Horizontal" Spacing="6">
+							<micons:MaterialIcon
+                                Width="20"
+                                Height="20"
+                                Kind="{x:Static miconsEnum:MaterialIconKind.Add}" />
+							<TextBlock VerticalAlignment="Center" Text="新增產品" />
+						</StackPanel>
+					</Button>
+					<!--<extendControls:IconActionButton
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Classes="Filled"
+                        Command="{Binding AddProductCommand}"
+                        CornerRadius="8"
+                        ToolTipText="新增產品">
+						<StackPanel Orientation="Horizontal" Spacing="6">
+							<micons:MaterialIcon
+                                Width="20"
+                                Height="20"
+                                Kind="{x:Static miconsEnum:MaterialIconKind.Add}" />
+							<TextBlock VerticalAlignment="Center" Text="新增產品" />
+						</StackPanel>
+					</extendControls:IconActionButton>-->
+				</Grid>
+			</Border>
+
+			<!--  主內容區域  -->
+			<Grid Grid.Row="1" Margin="0,16,0,0">
+				<DataGrid
+                    AutoGenerateColumns="False"
+                    Background="{DynamicResource MaterialCardBackgroundBrush}"
+                    CanUserReorderColumns="False"
+                    GridLinesVisibility="Horizontal"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding Products}"
+                    RowBackground="{DynamicResource MaterialCardBackgroundBrush}">
+
+					<DataGrid.Columns>
+						<DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding ProductCode}"
+                            Header="產品代碼" />
+
+						<DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding ProductName}"
+                            Header="產品名稱" />
+
+						<DataGridTextColumn
+                            Width="2*"
+                            Binding="{Binding Description}"
+                            Header="描述" />
+
+						<DataGridCheckBoxColumn
+                            Width="100"
+                            Binding="{Binding IsActive}"
+                            Header="啟用"
+                            IsReadOnly="True" />
+
+						<!--  操作按鈕  -->
+						<DataGridTemplateColumn Width="140">
+							<DataGridTemplateColumn.CellTemplate>
+								<DataTemplate>
+									<StackPanel
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+										<Button
+                                            Classes="Flat"
+                                            Command="{Binding DataContext.EditProductCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}">
+											<micons:MaterialIcon
+                                                Width="20"
+                                                Height="20"
+                                                Kind="{x:Static miconsEnum:MaterialIconKind.Edit}" />
+										</Button>
+
+										<Button
+                                            Classes="Flat"
+                                            Command="{Binding DataContext.DeleteProductCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}">
+											<micons:MaterialIcon
+                                                Width="20"
+                                                Height="20"
+                                                Kind="{x:Static miconsEnum:MaterialIconKind.Delete}" />
+										</Button>
+									</StackPanel>
+								</DataTemplate>
+							</DataGridTemplateColumn.CellTemplate>
+						</DataGridTemplateColumn>
+					</DataGrid.Columns>
+				</DataGrid>
+			</Grid>
+
+		</Grid>
+	</extendControls:PageContainer>
+</UserControl>

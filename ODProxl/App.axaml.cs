@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using ODProxl.ClientServices;
 using ODProxl.ClientServices.Impls;
 using ODProxl.Dialogs;
@@ -30,6 +30,9 @@ namespace ODProxl
             containerRegistry.RegisterForNavigation<OnnxModelPage, OnnxModelPageViewModel>();
             containerRegistry.RegisterForNavigation<ModelClassDialog, ModelClassDialogViewModel>();
             containerRegistry.RegisterForNavigation<AnnotationPage, AnnotationPageViewModel>();
+            containerRegistry.RegisterForNavigation<RuleMakingPage, RuleMakingPageViewModel>();
+            containerRegistry.RegisterForNavigation<ProductPage, ProductPageViewModel>();
+            containerRegistry.RegisterDialog<AddOrEditProductDialog, AddOrEditProductDialogViewModel>();
         }
 
         protected override AvaloniaObject CreateShell()
