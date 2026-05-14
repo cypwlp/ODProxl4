@@ -1,0 +1,35 @@
+﻿<UserControl
+    x:Class="ODProxl.RevisedRulesDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="250"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+	<Border Padding="20" Background="{DynamicResource MaterialCardBackgroundBrush}">
+		<StackPanel
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="12">
+			<TextBlock
+                HorizontalAlignment="Center"
+                FontSize="18"
+                FontWeight="Bold"
+                Text="{Binding Title}" />
+			<TextBox
+                Width="300"
+                Text="{Binding RuleName}"
+                Watermark="規則名稱" />
+			<CheckBox Content="是否啟用" IsChecked="{Binding IsActive}" />
+			<StackPanel
+                Margin="0,20,0,0"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="10">
+				<Button Command="{Binding CloseCommand}" CommandParameter="true">確定</Button>
+				<Button Command="{Binding CloseCommand}" CommandParameter="false">取消</Button>
+			</StackPanel>
+		</StackPanel>
+	</Border>
+</UserControl>

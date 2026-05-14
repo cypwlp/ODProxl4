@@ -33,6 +33,9 @@ namespace ODProxl
             containerRegistry.RegisterForNavigation<RuleMakingPage, RuleMakingPageViewModel>();
             containerRegistry.RegisterForNavigation<ProductPage, ProductPageViewModel>();
             containerRegistry.RegisterDialog<AddOrEditProductDialog, AddOrEditProductDialogViewModel>();
+            containerRegistry.RegisterDialog<RevisedRulesDialog, RevisedRulesDialogViewModel>();
+            containerRegistry.RegisterDialog<RevisionDetailsDialog, RevisionDetailsDialogViewModel>();
+            containerRegistry.RegisterDialog<RevisionConditionsDialog, RevisionConditionsDialogViewModel>();
         }
 
         protected override AvaloniaObject CreateShell()

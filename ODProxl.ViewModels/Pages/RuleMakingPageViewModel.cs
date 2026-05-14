@@ -15,28 +15,29 @@ namespace ODProxl.ViewModels.Pages
 {
     public class RuleMakingPageViewModel : BindableBase, INavigationAware
     {
-        #region INavigationAware
         public bool IsNavigationTarget(NavigationContext navigationContext) => true;
         public void OnNavigatedFrom(NavigationContext navigationContext) { }
         public async void OnNavigatedTo(NavigationContext navigationContext)
         {
             await LoadAllDataAsync();
         }
-        #endregion
 
-        #region 字段 & 构造函数
         private readonly IAuthService _authService;
         private readonly IHttpRestClient _httpRestClient;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IDialogService _dialogService;
+
         private ObservableCollection<UnifiedTreeNode>? _rootNodes;
 
-        public RuleMakingPageViewModel(IAuthService authService, IHttpRestClient httpRestClient, IEventAggregator eventAggregator)
+        public RuleMakingPageViewModel(IAuthService authService, IHttpRestClient httpRestClient, IEventAggregator eventAggregator, IDialogService dialogService)
         {
             _authService = authService;
             _httpRestClient = httpRestClient;
             _eventAggregator = eventAggregator;
+            _dialogService = dialogService;
 
             AddRuleCommand = new DelegateCommand(OnAddRule);
+            EditSelectedCommand = new DelegateCommand(OnEditSelected, CanEditSelected).ObservesProperty(() => SelectedTreeItem);
             SaveAllCommand = new DelegateCommand(OnSaveAllAsync);
             AddConditionCommand = new DelegateCommand(OnAddCondition, CanAddCondition).ObservesProperty(() => SelectedTreeItem);
             AddDetailCommand = new DelegateCommand(OnAddDetail, CanAddDetail).ObservesProperty(() => SelectedTreeItem);
@@ -44,9 +45,7 @@ namespace ODProxl.ViewModels.Pages
 
             Operators = new ObservableCollection<string> { "<=", ">", "==", "!=", "<", ">=" };
         }
-        #endregion
 
-        #region 属性
         private HierarchicalTreeDataGridSource<UnifiedTreeNode>? _treeSource;
         public HierarchicalTreeDataGridSource<UnifiedTreeNode>? TreeSource
         {
@@ -62,6 +61,7 @@ namespace ODProxl.ViewModels.Pages
             {
                 if (SetProperty(ref _selectedTreeItem, value))
                 {
+                    (EditSelectedCommand as DelegateCommand)?.RaiseCanExecuteChanged();
                     (AddConditionCommand as DelegateCommand)?.RaiseCanExecuteChanged();
                     (AddDetailCommand as DelegateCommand)?.RaiseCanExecuteChanged();
                     (DeleteSelectedCommand as DelegateCommand)?.RaiseCanExecuteChanged();
@@ -79,13 +79,12 @@ namespace ODProxl.ViewModels.Pages
         public ObservableCollection<string> Operators { get; }
 
         public DelegateCommand AddRuleCommand { get; }
+        public DelegateCommand EditSelectedCommand { get; }
         public DelegateCommand SaveAllCommand { get; }
         public DelegateCommand AddConditionCommand { get; }
         public DelegateCommand AddDetailCommand { get; }
         public DelegateCommand DeleteSelectedCommand { get; }
-        #endregion
 
-        #region 数据加载 - 构建树
         private async Task LoadAllDataAsync()
         {
             StatusText = "正在加载数据...";
@@ -151,7 +150,6 @@ namespace ODProxl.ViewModels.Pages
                     ruleNode.Children.Add(condNode);
                 }
 
-                // 无条件明细
                 var unconditionalDetails = allDetails.Where(d => d.RuleId == rule.RuleId && (d.ConditionId == null || d.ConditionId == 0)).ToList();
                 if (unconditionalDetails.Any())
                 {
@@ -220,9 +218,7 @@ namespace ODProxl.ViewModels.Pages
                 SelectedTreeItem = TreeSource.RowSelection.SelectedItem;
             };
         }
-        #endregion
 
-        #region 模板构建（唯讀模式）
         private static MaterialIconKind GetNodeIconKind(NodeType type) => type switch
         {
             NodeType.Rule => MaterialIconKind.ClipboardTextOutline,
@@ -231,7 +227,6 @@ namespace ODProxl.ViewModels.Pages
             _ => MaterialIconKind.HelpCircle
         };
 
-        // 名稱列模板 - 唯讀
         private Control BuildNodeNameControl(UnifiedTreeNode? node)
         {
             if (node == null) return new TextBlock { Text = "【空节点】" };
@@ -288,7 +283,6 @@ namespace ODProxl.ViewModels.Pages
             return panel;
         }
 
-        // 條件 / 明細列模板 - 唯讀
         private Control BuildDetailControl(UnifiedTreeNode? node)
         {
             if (node == null) return new TextBlock();
@@ -378,7 +372,6 @@ namespace ODProxl.ViewModels.Pages
             return panel;
         }
 
-        // 狀態列模板 - 唯讀
         private Control BuildStatusControl(UnifiedTreeNode? node)
         {
             if (node == null || node.Type != NodeType.Rule)
@@ -392,9 +385,7 @@ namespace ODProxl.ViewModels.Pages
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
             };
         }
-        #endregion
 
-        #region HTTP 请求方法
         private async Task<List<ProductRuleDto>> LoadProductRulesAsync()
         {
             var request = new ClientRequest { Url = "ProductRule", Method = Method.Get, ContentType = "application/json" };
@@ -415,133 +406,248 @@ namespace ODProxl.ViewModels.Pages
             var response = await _httpRestClient.ExecuteAsync<List<RuleDetailDto>>(request);
             return response.IsSuccess ? response.Data ?? new List<RuleDetailDto>() : new List<RuleDetailDto>();
         }
-        #endregion
 
-        #region 命令实现
         private void OnAddRule()
         {
-            if (_rootNodes == null) _rootNodes = new ObservableCollection<UnifiedTreeNode>();
-            var newNode = new UnifiedTreeNode { Type = NodeType.Rule, Id = 0, Name = "新规则", IsActive = true };
-            _rootNodes.Add(newNode);
-            RebuildTreeSource();
-            SelectedTreeItem = newNode;
-            StatusText = "请填写规则内容后点击【保存全部】";
-        }
-
-        private async void OnSaveAllAsync()
-        {
-            if (_rootNodes == null) return;
-            StatusText = "正在保存...";
-
-            foreach (var ruleNode in _rootNodes.ToList())
+            _dialogService.ShowDialog("RevisedRulesDialog", new DialogParameters(), async (IDialogResult result) =>
             {
-                // 保存规则
-                if (ruleNode.Id == 0)
+                if (result.Result == ButtonResult.OK)
                 {
-                    var createDto = new CreateProductRuleDto { ProductCode = "NEW_CODE", RuleName = ruleNode.Name, IsActive = ruleNode.IsActive };
+                    var ruleName = result.Parameters.GetValue<string>("RuleName");
+                    var isActive = result.Parameters.GetValue<bool>("IsActive");
+
+                    var createDto = new CreateProductRuleDto
+                    {
+                        ProductCode = "NEW_CODE",
+                        RuleName = ruleName,
+                        IsActive = isActive
+                    };
+
                     var request = new ClientRequest { Url = "ProductRule", Method = Method.Post, Parameters = createDto };
                     var response = await _httpRestClient.ExecuteAsync<ProductRuleDto>(request);
-                    if (response.IsSuccess && response.Data != null) ruleNode.Id = response.Data.RuleId;
-                    else { StatusText = $"保存规则失败"; return; }
-                }
-                else
-                {
-                    var updateDto = new UpdateProductRuleDto { ProductCode = null, RuleName = ruleNode.Name, IsActive = ruleNode.IsActive };
-                    var request = new ClientRequest { Url = $"ProductRule/{ruleNode.Id}", Method = Method.Put, Parameters = updateDto };
-                    await _httpRestClient.ExecuteAsync<ProductRuleDto>(request);
-                }
 
-                // 保存条件
-                foreach (var condNode in ruleNode.Children.Where(c => c.Type == NodeType.Condition).ToList())
-                {
-                    if (condNode.Id == 0)
+                    if (response.IsSuccess && response.Data != null)
                     {
-                        var createDto = new CreateRuleConditionDto
+                        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            RuleId = ruleNode.Id,
-                            ConditionName = condNode.Name,
-                            Operator = condNode.Operator,
-                            Value = condNode.Value,
-                            Unit = condNode.Unit
-                        };
-                        var request = new ClientRequest { Url = "RuleCondition", Method = Method.Post, Parameters = createDto };
-                        var response = await _httpRestClient.ExecuteAsync<RuleConditionDto>(request);
-                        if (response.IsSuccess && response.Data != null)
-                        {
-                            condNode.Id = response.Data.ConditionId;
-                            foreach (var det in condNode.Children)
-                                det.ConditionId = condNode.Id;
-                        }
-                        else { StatusText = $"保存条件失败"; return; }
+                            var newNode = new UnifiedTreeNode
+                            {
+                                Type = NodeType.Rule,
+                                Id = response.Data.RuleId,
+                                Name = ruleName,
+                                IsActive = isActive
+                            };
+
+                            if (_rootNodes == null) _rootNodes = new ObservableCollection<UnifiedTreeNode>();
+                            _rootNodes.Add(newNode);
+                            RebuildTreeSource();
+                            StatusText = "規則已新增";
+                        });
                     }
                     else
                     {
-                        var updateDto = new UpdateRuleConditionDto
-                        {
-                            ConditionName = condNode.Name,
-                            Operator = condNode.Operator,
-                            Value = condNode.Value,
-                            Unit = condNode.Unit
-                        };
-                        var request = new ClientRequest { Url = $"RuleCondition/{condNode.Id}", Method = Method.Put, Parameters = updateDto };
-                        await _httpRestClient.ExecuteAsync<RuleConditionDto>(request);
-                    }
-
-                    // 保存明细
-                    foreach (var detNode in condNode.Children.Where(d => d.Type == NodeType.Detail).ToList())
-                    {
-                        if (detNode.Id == 0)
-                        {
-                            var createDto = new CreateRuleDetailDto
-                            {
-                                RuleId = ruleNode.Id,
-                                ConditionId = condNode.Id == 0 ? null : condNode.Id,
-                                ClassId = detNode.ClassId,
-                                AttrName = detNode.Name ?? "",
-                                AttrValue = detNode.AttrValue ?? "",
-                                AttrUnit = detNode.AttrUnit
-                            };
-                            var request = new ClientRequest { Url = "RuleDetail", Method = Method.Post, Parameters = createDto };
-                            var response = await _httpRestClient.ExecuteAsync<RuleDetailDto>(request);
-                            if (response.IsSuccess && response.Data != null) detNode.Id = response.Data.DetailId;
-                        }
-                        else
-                        {
-                            var updateDto = new UpdateRuleDetailDto
-                            {
-                                ConditionId = condNode.Id == 0 ? null : condNode.Id,
-                                AttrName = detNode.Name,
-                                AttrValue = detNode.AttrValue,
-                                AttrUnit = detNode.AttrUnit
-                            };
-                            var request = new ClientRequest { Url = $"RuleDetail/{detNode.Id}", Method = Method.Put, Parameters = updateDto };
-                            await _httpRestClient.ExecuteAsync<RuleDetailDto>(request);
-                        }
+                        StatusText = "新增規則失敗";
                     }
                 }
+            });
+        }
+
+        private bool CanEditSelected()
+        {
+            return SelectedTreeItem is UnifiedTreeNode;
+        }
+
+        private async void OnEditSelected()
+        {
+            if (SelectedTreeItem is not UnifiedTreeNode node) return;
+
+            var parameters = new DialogParameters();
+            string dialogName = "";
+
+            switch (node.Type)
+            {
+                case NodeType.Rule:
+                    dialogName = "RevisedRulesDialog";
+                    parameters.Add("RuleId", node.Id);
+                    parameters.Add("RuleName", node.Name);
+                    parameters.Add("IsActive", node.IsActive);
+                    break;
+
+                case NodeType.Condition:
+                    dialogName = "RevisionConditionsDialog";
+                    parameters.Add("ConditionId", node.Id);
+                    parameters.Add("ConditionName", node.Name);
+                    parameters.Add("Operator", node.Operator ?? "<=");
+                    parameters.Add("Value", node.Value);
+                    parameters.Add("Unit", node.Unit ?? "");
+                    break;
+
+                case NodeType.Detail:
+                    dialogName = "RevisionDetailsDialog";
+                    parameters.Add("DetailId", node.Id);
+                    parameters.Add("AttrName", node.Name);
+                    parameters.Add("AttrValue", node.AttrValue ?? "");
+                    parameters.Add("AttrUnit", node.AttrUnit ?? "");
+                    parameters.Add("ClassId", node.ClassId);
+                    break;
+
+                default:
+                    return;
             }
 
-            StatusText = "全部保存成功";
-            await LoadAllDataAsync();
+            _dialogService.ShowDialog(dialogName, parameters, async (IDialogResult result) =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+                    switch (node.Type)
+                    {
+                        case NodeType.Rule:
+                            await UpdateRuleFromDialog(node, result.Parameters);
+                            break;
+                        case NodeType.Condition:
+                            await UpdateConditionFromDialog(node, result.Parameters);
+                            break;
+                        case NodeType.Detail:
+                            await UpdateDetailFromDialog(node, result.Parameters);
+                            break;
+                    }
+                    RebuildTreeSource();
+                }
+            });
+        }
+
+        private async Task UpdateRuleFromDialog(UnifiedTreeNode node, IDialogParameters parameters)
+        {
+            var ruleName = parameters.GetValue<string>("RuleName");
+            var isActive = parameters.GetValue<bool>("IsActive");
+
+            if (node.Id > 0)
+            {
+                var dto = new UpdateProductRuleDto { RuleName = ruleName, IsActive = isActive };
+                var request = new ClientRequest { Url = $"ProductRule/{node.Id}", Method = Method.Put, Parameters = dto };
+                var response = await _httpRestClient.ExecuteAsync<ProductRuleDto>(request);
+                if (response.IsSuccess)
+                {
+                    node.Name = ruleName;
+                    node.IsActive = isActive;
+                    StatusText = "規則已更新";
+                }
+                else
+                {
+                    StatusText = "更新規則失敗";
+                }
+            }
+        }
+
+        private async Task UpdateConditionFromDialog(UnifiedTreeNode node, IDialogParameters parameters)
+        {
+            var conditionName = parameters.GetValue<string>("ConditionName");
+            var op = parameters.GetValue<string>("Operator");
+            var value = parameters.GetValue<decimal>("Value");
+            var unit = parameters.GetValue<string>("Unit");
+
+            if (node.Id > 0)
+            {
+                var dto = new UpdateRuleConditionDto { ConditionName = conditionName, Operator = op, Value = value, Unit = unit };
+                var request = new ClientRequest { Url = $"RuleCondition/{node.Id}", Method = Method.Put, Parameters = dto };
+                var response = await _httpRestClient.ExecuteAsync<RuleConditionDto>(request);
+                if (response.IsSuccess)
+                {
+                    node.Name = conditionName;
+                    node.Operator = op;
+                    node.Value = value;
+                    node.Unit = unit;
+                    StatusText = "條件已更新";
+                }
+                else
+                {
+                    StatusText = "更新條件失敗";
+                }
+            }
+        }
+
+        private async Task UpdateDetailFromDialog(UnifiedTreeNode node, IDialogParameters parameters)
+        {
+            var attrName = parameters.GetValue<string>("AttrName");
+            var attrValue = parameters.GetValue<string>("AttrValue");
+            var attrUnit = parameters.GetValue<string>("AttrUnit");
+            var classId = parameters.GetValue<int>("ClassId");
+
+            if (node.Id > 0)
+            {
+                var dto = new UpdateRuleDetailDto { AttrName = attrName, AttrValue = attrValue, AttrUnit = attrUnit };
+                var request = new ClientRequest { Url = $"RuleDetail/{node.Id}", Method = Method.Put, Parameters = dto };
+                var response = await _httpRestClient.ExecuteAsync<RuleDetailDto>(request);
+                if (response.IsSuccess)
+                {
+                    node.Name = attrName;
+                    node.AttrValue = attrValue;
+                    node.AttrUnit = attrUnit;
+                    node.ClassId = classId;
+                    StatusText = "明細已更新";
+                }
+                else
+                {
+                    StatusText = "更新明細失敗";
+                }
+            }
+        }
+
+        private void OnSaveAllAsync()
+        {
+            StatusText = "当前已采用即时保存模式，无需批量保存";
         }
 
         private void OnAddCondition()
         {
             if (SelectedTreeItem is UnifiedTreeNode node && node.Type == NodeType.Rule)
             {
-                var newCond = new UnifiedTreeNode
+                _dialogService.ShowDialog("RevisionConditionsDialog", new DialogParameters(), async (IDialogResult result) =>
                 {
-                    Type = NodeType.Condition,
-                    Id = 0,
-                    Name = "新条件",
-                    Operator = "<=",
-                    Value = 0,
-                    Unit = ""
-                };
-                node.Children.Add(newCond);
-                RebuildTreeSource();
-                SelectedTreeItem = newCond;
-                StatusText = "请填写条件内容后保存";
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        var conditionName = result.Parameters.GetValue<string>("ConditionName");
+                        var op = result.Parameters.GetValue<string>("Operator");
+                        var value = result.Parameters.GetValue<decimal>("Value");
+                        var unit = result.Parameters.GetValue<string>("Unit");
+
+                        var createDto = new CreateRuleConditionDto
+                        {
+                            RuleId = node.Id,
+                            ConditionName = conditionName,
+                            Operator = op,
+                            Value = value,
+                            Unit = unit
+                        };
+
+                        var request = new ClientRequest { Url = "RuleCondition", Method = Method.Post, Parameters = createDto };
+                        var response = await _httpRestClient.ExecuteAsync<RuleConditionDto>(request);
+
+                        if (response.IsSuccess && response.Data != null)
+                        {
+                            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                var newCond = new UnifiedTreeNode
+                                {
+                                    Type = NodeType.Condition,
+                                    Id = response.Data.ConditionId,
+                                    Name = conditionName,
+                                    Operator = op,
+                                    Value = value,
+                                    Unit = unit
+                                };
+
+                                node.Children.Add(newCond);
+                                RebuildTreeSource();
+                                StatusText = "條件已新增";
+                            });
+                        }
+                        else
+                        {
+                            StatusText = "新增條件失敗";
+                        }
+                    }
+                });
             }
         }
 
@@ -549,19 +655,57 @@ namespace ODProxl.ViewModels.Pages
         {
             if (SelectedTreeItem is UnifiedTreeNode node && node.Type == NodeType.Condition)
             {
-                var newDetail = new UnifiedTreeNode
+                var parentRule = FindParentRule(node);
+                if (parentRule == null) return;
+
+                _dialogService.ShowDialog("RevisionDetailsDialog", new DialogParameters(), async (IDialogResult result) =>
                 {
-                    Type = NodeType.Detail,
-                    Id = 0,
-                    Name = "新属性",
-                    ClassId = 0,
-                    AttrValue = "",
-                    AttrUnit = ""
-                };
-                node.Children.Add(newDetail);
-                RebuildTreeSource();
-                SelectedTreeItem = newDetail;
-                StatusText = "请填写明细内容后保存";
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        var attrName = result.Parameters.GetValue<string>("AttrName");
+                        var attrValue = result.Parameters.GetValue<string>("AttrValue");
+                        var attrUnit = result.Parameters.GetValue<string>("AttrUnit");
+                        var classId = result.Parameters.GetValue<int>("ClassId");
+
+                        var createDto = new CreateRuleDetailDto
+                        {
+                            RuleId = parentRule.Id,
+                            ConditionId = node.Id == 0 ? null : node.Id,
+                            ClassId = classId,
+                            AttrName = attrName,
+                            AttrValue = attrValue,
+                            AttrUnit = attrUnit
+                        };
+
+                        var request = new ClientRequest { Url = "RuleDetail", Method = Method.Post, Parameters = createDto };
+                        var response = await _httpRestClient.ExecuteAsync<RuleDetailDto>(request);
+
+                        if (response.IsSuccess && response.Data != null)
+                        {
+                            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                var newDetail = new UnifiedTreeNode
+                                {
+                                    Type = NodeType.Detail,
+                                    Id = response.Data.DetailId,
+                                    Name = attrName,
+                                    ClassId = classId,
+                                    AttrValue = attrValue,
+                                    AttrUnit = attrUnit,
+                                    ConditionId = node.Id
+                                };
+
+                                node.Children.Add(newDetail);
+                                RebuildTreeSource();
+                                StatusText = "明細已新增";
+                            });
+                        }
+                        else
+                        {
+                            StatusText = "新增明細失敗";
+                        }
+                    }
+                });
             }
         }
 
@@ -632,6 +776,5 @@ namespace ODProxl.ViewModels.Pages
         private bool CanAddCondition() => SelectedTreeItem is UnifiedTreeNode n && n.Type == NodeType.Rule;
         private bool CanAddDetail() => SelectedTreeItem is UnifiedTreeNode n && n.Type == NodeType.Condition;
         private bool CanDeleteSelected() => SelectedTreeItem is UnifiedTreeNode;
-        #endregion
     }
 }
