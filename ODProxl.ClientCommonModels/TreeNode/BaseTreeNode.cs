@@ -13,6 +13,7 @@ namespace ODProxl.ClientCommonModels.TreeNode
 
     public class UnifiedTreeNode : INotifyPropertyChanged
     {
+        private string? _productCode;
         private NodeType _type;
         private int _id;
         private string? _name;
@@ -86,6 +87,11 @@ namespace ODProxl.ClientCommonModels.TreeNode
             set { _attrValue = value; OnPropertyChanged(); }
         }
 
+        public string? ProductCode
+        {
+            get => _productCode;
+            set { _productCode = value; OnPropertyChanged(); }
+        }
         public string? AttrUnit
         {
             get => _attrUnit;

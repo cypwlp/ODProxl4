@@ -13,6 +13,7 @@
 		<converters:ObjectEqualityConverter x:Key="ObjectEqualityConverter" />
 		<converters:BoolToMenuIconConverter x:Key="BoolToIconConverter" />
 		<converters:NotificationIconConverter x:Key="NotificationIconConverter" />
+		<converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
 		<SolidColorBrush x:Key="MaterialCardBackgroundBrush" Color="#FFFCFCFF" />
 		<SolidColorBrush x:Key="MaterialAltBackgroundBrush" Color="#F0F4FF" />
 		<SolidColorBrush x:Key="MaterialHoverBackgroundBrush" Color="#E0E7FF" />

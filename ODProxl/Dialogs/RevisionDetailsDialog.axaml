@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="280"
+    d:DesignHeight="400"
     d:DesignWidth="400"
     mc:Ignorable="d">
 	<Border Padding="20" Background="{DynamicResource MaterialCardBackgroundBrush}">
@@ -12,11 +12,6 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Spacing="12">
-			<TextBlock
-                HorizontalAlignment="Center"
-                FontSize="18"
-                FontWeight="Bold"
-                Text="{Binding Title}" />
 			<TextBox
                 Width="300"
                 Text="{Binding AttrName}"

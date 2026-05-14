@@ -1,24 +1,31 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:micons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ODProxl.ExtendControls.IconActionButton">
-    <Button x:Name="InnerButton"
-            Classes="Filled TonalLarge"
-            CornerRadius="16"
-            MinWidth="56" MinHeight="56"
-            ToolTip.Tip="{Binding ToolTipText, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}">
-        <Grid>
-
-            <micons:MaterialIcon x:Name="DefaultIcon"
-                                 Kind="{Binding IconKind, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
-                                 Width="28" Height="28"
-                                 IsVisible="{Binding IsDefaultIconVisible, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}" />
-            <ContentPresenter x:Name="CustomContentPresenter"
-                              Content="{Binding Content, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
-                              IsVisible="{Binding IsCustomContentVisible, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}" />
-        </Grid>
-    </Button>
+﻿<UserControl
+    x:Class="ODProxl.ExtendControls.IconActionButton"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:micons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+	<Button
+        x:Name="InnerButton"
+        MinWidth="56"
+        MinHeight="56"
+        Classes="Filled TonalLarge"
+        Command="{Binding Command, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
+        CommandParameter="{Binding CommandParameter, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
+        CornerRadius="16"
+        ToolTip.Tip="{Binding ToolTipText, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}">
+		<StackPanel Orientation="Horizontal" Spacing="8">
+			<micons:MaterialIcon
+                Width="28"
+                Height="28"
+                Kind="{Binding IconKind, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}" />
+			<TextBlock
+                VerticalAlignment="Center"
+                IsVisible="{Binding Text, Converter={StaticResource StringNotEmptyConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
+                Text="{Binding Text, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}" />
+		</StackPanel>
+	</Button>
 </UserControl>

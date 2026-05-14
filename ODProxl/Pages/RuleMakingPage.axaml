@@ -3,50 +3,77 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extendControls="clr-namespace:ODProxl.ExtendControls;assembly=ODProxl"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:micons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:treeDataGrid="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.TreeDataGrid"
     xmlns:vm="clr-namespace:ODProxl.ViewModels.Pages;assembly=ODProxl.ViewModels"
     d:DesignHeight="800"
     d:DesignWidth="1200"
     x:DataType="vm:RuleMakingPageViewModel"
     mc:Ignorable="d">
+	<extendControls:PageContainer>
+		<Grid RowDefinitions="Auto,*">
+			<Border
+                Grid.Row="0"
+                Padding="12"
+                Background="{DynamicResource MaterialCardBackgroundBrush}">
+				<StackPanel Orientation="Horizontal" Spacing="8">
+					<extendControls:IconActionButton
+                        Command="{Binding AddRuleCommand}"
+                        IconKind="AddAlertOutline"
+                        Text="新增規則" />
+					<extendControls:IconActionButton
+                        Command="{Binding AddConditionCommand}"
+                        IconKind="AddCircle"
+                        Text="新增條件" />
+					<extendControls:IconActionButton
+                        Command="{Binding AddDetailCommand}"
+                        IconKind="AddAlarm"
+                        Text="新增明細" />
+					<extendControls:IconActionButton
+                        Command="{Binding EditSelectedCommand}"
+                        IconKind="EditCircle"
+                        Text="編輯選中" />
+					<extendControls:IconActionButton
+                        Command="{Binding DeleteSelectedCommand}"
+                        IconKind="Delete"
+                        Text="刪除選中" />
+					<extendControls:IconActionButton
+                        Command="{Binding SaveAllCommand}"
+                        IconKind="Safe"
+                        Text="保存" />
+					<!--<Button Command="{Binding AddRuleCommand}">➕ 新增規則</Button>
+					<Button Command="{Binding EditSelectedCommand}">✏️ 編輯選中</Button>
+					<Button Command="{Binding AddConditionCommand}">🔗 新增條件</Button>
+					<Button Command="{Binding AddDetailCommand}">📄 新增明細</Button>
+					<Button Command="{Binding DeleteSelectedCommand}">🗑️ 刪除選中</Button>
+					<Button
+                        Background="Green"
+                        Command="{Binding SaveAllCommand}"
+                        Foreground="White">
+						💾 保存全部
+					</Button>-->
+					<!--<TextBlock
+                        Margin="20,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="{Binding StatusText}" />-->
+				</StackPanel>
+			</Border>
 
-	<Grid RowDefinitions="Auto,*">
-		<Border
-            Grid.Row="0"
-            Padding="12"
-            Background="{DynamicResource MaterialCardBackgroundBrush}">
-			<StackPanel Orientation="Horizontal" Spacing="8">
-				<Button Command="{Binding AddRuleCommand}">➕ 新增規則</Button>
-				<Button Command="{Binding EditSelectedCommand}">✏️ 編輯選中</Button>
-				<Button Command="{Binding AddConditionCommand}">🔗 新增條件</Button>
-				<Button Command="{Binding AddDetailCommand}">📄 新增明細</Button>
-				<Button Command="{Binding DeleteSelectedCommand}">🗑️ 刪除選中</Button>
-				<Button
-                    Background="Green"
-                    Command="{Binding SaveAllCommand}"
-                    Foreground="White">
-					💾 保存全部
-				</Button>
-				<TextBlock
-                    Margin="20,0,0,0"
-                    VerticalAlignment="Center"
-                    Text="{Binding StatusText}" />
-			</StackPanel>
-		</Border>
-
-		<treeDataGrid:TreeDataGrid
-            x:Name="MainTreeGrid"
-            Grid.Row="1"
-            CanUserResizeColumns="True"
-            CanUserSortColumns="False"
-            Source="{Binding TreeSource}">
-			<treeDataGrid:TreeDataGrid.Styles>
-				<Style Selector="TreeDataGridRow">
-					<Setter Property="MinHeight" Value="44" />
-					<Setter Property="Height" Value="44" />
-				</Style>
-			</treeDataGrid:TreeDataGrid.Styles>
-		</treeDataGrid:TreeDataGrid>
-	</Grid>
+			<treeDataGrid:TreeDataGrid
+                x:Name="MainTreeGrid"
+                Grid.Row="1"
+                CanUserResizeColumns="True"
+                CanUserSortColumns="False"
+                Source="{Binding TreeSource}">
+				<treeDataGrid:TreeDataGrid.Styles>
+					<Style Selector="TreeDataGridRow">
+						<Setter Property="MinHeight" Value="44" />
+						<Setter Property="Height" Value="44" />
+					</Style>
+				</treeDataGrid:TreeDataGrid.Styles>
+			</treeDataGrid:TreeDataGrid>
+		</Grid>
+	</extendControls:PageContainer>
 </UserControl>

@@ -6,6 +6,8 @@
 		<ApplicationIcon>Assets\avalonia-logo.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<LangVersion>preview</LangVersion>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile></AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Avalonia" />
@@ -45,6 +47,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Remove="MainWindow.axaml.cs" />
+		<Content Include="Assets\avalonia-logo.ico" />
 		<Compile Update="Dialogs\AddOrEditProductDialog.axaml.cs">
 			<DependentUpon>AddOrEditProductDialog.axaml</DependentUpon>
 		</Compile>

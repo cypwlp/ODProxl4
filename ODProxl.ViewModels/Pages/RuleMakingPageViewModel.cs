@@ -117,6 +117,7 @@ namespace ODProxl.ViewModels.Pages
                     Type = NodeType.Rule,
                     Id = rule.RuleId,
                     Name = rule.RuleName,
+                    ProductCode = rule.ProductCode,
                     IsActive = rule.IsActive
                 };
 
@@ -279,7 +280,16 @@ namespace ODProxl.ViewModels.Pages
             panel.Children.Add(typeLabel);
             panel.Children.Add(idLabel);
             panel.Children.Add(nameLabel);
-
+            if (node.Type == NodeType.Rule)
+            {
+                panel.Children.Add(new TextBlock
+                {
+                    Text = string.IsNullOrEmpty(node.ProductCode) ? "(無產品代碼)" : node.ProductCode,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    Foreground = Avalonia.Media.Brushes.DodgerBlue,
+                    Margin = new Avalonia.Thickness(8, 0, 0, 0)
+                });
+            }
             return panel;
         }
 
@@ -415,10 +425,11 @@ namespace ODProxl.ViewModels.Pages
                 {
                     var ruleName = result.Parameters.GetValue<string>("RuleName");
                     var isActive = result.Parameters.GetValue<bool>("IsActive");
+                    var productCode = result.Parameters.GetValue<string>("productCode");
 
                     var createDto = new CreateProductRuleDto
                     {
-                        ProductCode = "NEW_CODE",
+                        ProductCode = productCode,
                         RuleName = ruleName,
                         IsActive = isActive
                     };
@@ -434,6 +445,7 @@ namespace ODProxl.ViewModels.Pages
                             {
                                 Type = NodeType.Rule,
                                 Id = response.Data.RuleId,
+                                ProductCode = productCode,
                                 Name = ruleName,
                                 IsActive = isActive
                             };
@@ -468,6 +480,7 @@ namespace ODProxl.ViewModels.Pages
             {
                 case NodeType.Rule:
                     dialogName = "RevisedRulesDialog";
+                    parameters.Add("ProductCode", node.ProductCode);
                     parameters.Add("RuleId", node.Id);
                     parameters.Add("RuleName", node.Name);
                     parameters.Add("IsActive", node.IsActive);

@@ -4,24 +4,35 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="250"
+    xmlns:vm="clr-namespace:ODProxl.ViewModels.Dialogs;assembly=ODProxl.ViewModels"
+    d:DesignHeight="280"
     d:DesignWidth="400"
+    x:DataType="vm:RevisedRulesDialogViewModel"
     mc:Ignorable="d">
 	<Border Padding="20" Background="{DynamicResource MaterialCardBackgroundBrush}">
 		<StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Spacing="12">
-			<TextBlock
-                HorizontalAlignment="Center"
-                FontSize="18"
-                FontWeight="Bold"
-                Text="{Binding Title}" />
+
+			<AutoCompleteBox
+                Width="300"
+                FilterMode="Contains"
+                ItemsSource="{Binding ProductCodes}"
+                MinimumPrefixLength="0"
+                SelectedItem="{Binding SelectedProductCode}"
+                Watermark="请输入产品代码" />
+
+			<!--  規則名稱輸入  -->
 			<TextBox
                 Width="300"
                 Text="{Binding RuleName}"
                 Watermark="規則名稱" />
+
+			<!--  是否啟用  -->
 			<CheckBox Content="是否啟用" IsChecked="{Binding IsActive}" />
+
+			<!--  確定 / 取消按鈕  -->
 			<StackPanel
                 Margin="0,20,0,0"
                 HorizontalAlignment="Center"
