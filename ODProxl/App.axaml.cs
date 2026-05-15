@@ -20,6 +20,7 @@ namespace ODProxl
             containerRegistry.RegisterSingleton<IAuthService, AuthService>();
             containerRegistry.RegisterSingleton<IHttpRestClient>(sp => new HttpRestClient(
                 new RestClient(),
+                //"http://interior.topmix.net/Info/System/SoftWare/ODApi/api/",
                 "https://localhost:44364/api/",
                 sp.Resolve<IAuthService>()
             ));
@@ -32,10 +33,12 @@ namespace ODProxl
             containerRegistry.RegisterForNavigation<AnnotationPage, AnnotationPageViewModel>();
             containerRegistry.RegisterForNavigation<RuleMakingPage, RuleMakingPageViewModel>();
             containerRegistry.RegisterForNavigation<ProductPage, ProductPageViewModel>();
+            containerRegistry.RegisterForNavigation<ProductGroupPage, ProductGroupPageViewModel>();
             containerRegistry.RegisterDialog<AddOrEditProductDialog, AddOrEditProductDialogViewModel>();
             containerRegistry.RegisterDialog<RevisedRulesDialog, RevisedRulesDialogViewModel>();
             containerRegistry.RegisterDialog<RevisionDetailsDialog, RevisionDetailsDialogViewModel>();
             containerRegistry.RegisterDialog<RevisionConditionsDialog, RevisionConditionsDialogViewModel>();
+            containerRegistry.RegisterDialog<ReviseProductGroupDialog, ReviseProductGroupDialogViewModel>();
         }
 
         protected override AvaloniaObject CreateShell()

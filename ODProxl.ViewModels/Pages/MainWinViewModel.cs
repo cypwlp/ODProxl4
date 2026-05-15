@@ -195,6 +195,12 @@ namespace ODProxl.ViewModels.Pages
                     SubItems = new ObservableCollection<LeftMenuItem>
                     {
                         new LeftMenuItem{
+                            Icon=MaterialIconKind.Group,
+                            Title="群組管理",
+                            ViewName="ProductGroupPage",
+                            LimitUserName=new ObservableCollection<string>{"AllUser"}
+                        },
+                        new LeftMenuItem{
                             Icon=MaterialIconKind.ChartProductionPossibilityFrontier,
                             Title="產品管理",
                             ViewName="ProductPage",

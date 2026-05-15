@@ -1,0 +1,150 @@
+﻿<UserControl
+    x:Class="ODProxl.Pages.ProductGroupPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dto="clr-namespace:ODProxl.ClientDtos;assembly=ODProxl.ClientDtos"
+    xmlns:et="clr-namespace:ODProxl.ExtendControls;assembly=ODProxl"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:micons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:vm="clr-namespace:ODProxl.ViewModels.Pages;assembly=ODProxl.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="vm:ProductGroupPageViewModel"
+    mc:Ignorable="d">
+	<et:PageContainer>
+		<Grid RowDefinitions="Auto,*">
+			<Border
+                Grid.Row="0"
+                Padding="16,12"
+                Background="{DynamicResource MaterialAltBackgroundBrush}"
+                CornerRadius="12,12,0,0">
+
+				<Grid ColumnDefinitions="*,Auto">
+					<StackPanel Orientation="Horizontal" Spacing="12">
+						<micons:MaterialIcon
+                            Width="28"
+                            Height="28"
+                            Foreground="{DynamicResource MaterialPrimaryBrush}"
+                            Kind="PackageVariant" />
+						<TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="24"
+                            FontWeight="Bold"
+                            Text="產品組管理" />
+					</StackPanel>
+
+					<StackPanel
+                        Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="8">
+						<Button
+                            Classes="Filled"
+                            Command="{Binding AddProductGroupCommand}"
+                            CornerRadius="8">
+							<StackPanel Orientation="Horizontal" Spacing="6">
+								<micons:MaterialIcon
+                                    Width="20"
+                                    Height="20"
+                                    Kind="Add" />
+								<TextBlock VerticalAlignment="Center" Text="新增群組" />
+							</StackPanel>
+						</Button>
+
+						<Button
+                            Classes="Filled"
+                            Command="{Binding EditProductGroupCommand}"
+                            CommandParameter="{Binding SelectedProductGroup}"
+                            CornerRadius="8">
+							<StackPanel Orientation="Horizontal" Spacing="6">
+								<micons:MaterialIcon
+                                    Width="20"
+                                    Height="20"
+                                    Kind="Edit" />
+								<TextBlock VerticalAlignment="Center" Text="修改群組" />
+							</StackPanel>
+						</Button>
+					</StackPanel>
+				</Grid>
+			</Border>
+			<Grid Grid.Row="1" Margin="0,16,0,0">
+				<DataGrid
+                    x:DataType="dto:ProductGroupDto"
+                    AutoGenerateColumns="False"
+                    Background="{DynamicResource MaterialCardBackgroundBrush}"
+                    CanUserReorderColumns="False"
+                    GridLinesVisibility="Horizontal"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding ProductGroups}"
+                    RowBackground="{DynamicResource MaterialCardBackgroundBrush}"
+                    SelectedItem="{Binding SelectedProductGroup}">
+
+					<DataGrid.Columns>
+						<DataGridTextColumn
+                            Width="2*"
+                            Binding="{Binding GroupName}"
+                            Header="組名" />
+
+						<DataGridTextColumn
+                            Width="2*"
+                            Binding="{Binding CreatedBy}"
+                            Header="創建人" />
+
+						<DataGridTextColumn
+                            Width="2*"
+                            Binding="{Binding CreatedTime}"
+                            Header="創建時間" />
+
+						<DataGridTextColumn
+                            Width="2*"
+                            Binding="{Binding UpdatedBy}"
+                            Header="修改人" />
+						<DataGridTextColumn
+                            Width="2*"
+                            Binding="{Binding UpdatedTime}"
+                            Header="修改時間" />
+
+						<DataGridCheckBoxColumn
+                            Width="100"
+                            Binding="{Binding IsActive}"
+                            Header="啟用"
+                            IsReadOnly="True" />
+
+						<!--  操作按鈕  -->
+						<DataGridTemplateColumn Width="140">
+							<DataGridTemplateColumn.CellTemplate>
+								<DataTemplate>
+									<StackPanel
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+										<Button
+                                            Classes="Flat"
+                                            Command="{Binding DataContext.EditProductCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}">
+											<micons:MaterialIcon
+                                                Width="20"
+                                                Height="20"
+                                                Kind="Edit" />
+										</Button>
+
+										<Button
+                                            Classes="Flat"
+                                            Command="{Binding DataContext.DeleteProductCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}">
+											<micons:MaterialIcon
+                                                Width="20"
+                                                Height="20"
+                                                Kind="Delete" />
+										</Button>
+									</StackPanel>
+								</DataTemplate>
+							</DataGridTemplateColumn.CellTemplate>
+						</DataGridTemplateColumn>
+					</DataGrid.Columns>
+				</DataGrid>
+			</Grid>
+
+		</Grid>
+	</et:PageContainer>
+</UserControl>

@@ -7,7 +7,7 @@ namespace ODProxl.ViewModels.Dialogs
 {
     public class RevisedRulesDialogViewModel : BindableBase, IDialogAware
     {
-        public string Title { get; set; } = "新增或修訂規則";
+        public string Title { get; set; }
         public DialogCloseListener RequestClose { get; set; }
 
         private int _ruleId;
