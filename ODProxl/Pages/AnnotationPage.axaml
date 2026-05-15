@@ -202,7 +202,14 @@
                                     x:Name="DrawingCanvas"
                                     Width="{Binding ImagePixelWidth}"
                                     Height="{Binding ImagePixelHeight}"
-                                    Background="Transparent" />
+                                    Background="Transparent"
+                                    DoubleTapped="DrawingCanvas_DoubleTapped"
+                                    Focusable="True"
+                                    KeyDown="DrawingCanvas_KeyDown"
+                                    PointerMoved="DrawingCanvas_PointerMoved"
+                                    PointerPressed="DrawingCanvas_PointerPressed"
+                                    PointerReleased="DrawingCanvas_PointerReleased"
+                                    PointerWheelChanged="DrawingCanvas_PointerWheelChanged" />
 							</Grid>
 						</Border>
 					</ScrollViewer>

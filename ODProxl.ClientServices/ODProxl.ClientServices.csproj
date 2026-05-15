@@ -1,10 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ODProxl.ClientDtos\ODProxl.ClientDtos.csproj" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ODProxl.ClientCommonModels\ODProxl.ClientCommonModels.csproj" />
+		<ProjectReference Include="..\ODProxl.ClientDtos\ODProxl.ClientDtos.csproj" />
+		<PackageReference Include="SkiaSharp" />
+	</ItemGroup>
 </Project>

@@ -10,6 +10,7 @@ using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Navigation.Regions;
 using RestSharp;
+using System.Net.Http;
 
 namespace ODProxl
 {
@@ -18,6 +19,7 @@ namespace ODProxl
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<IAuthService, AuthService>();
+            containerRegistry.RegisterSingleton<HttpClient>();
             containerRegistry.RegisterSingleton<IHttpRestClient>(sp => new HttpRestClient(
                 new RestClient(),
                 //"http://interior.topmix.net/Info/System/SoftWare/ODApi/api/",
