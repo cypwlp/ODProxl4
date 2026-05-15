@@ -28,8 +28,8 @@
                         Orientation="Horizontal"
                         Spacing="12">
 						<StackPanel Orientation="Horizontal" Spacing="8">
-							<extentControls:IconActionButton IconKind="FolderOpen" ToolTipText="載入 PDF 資料夾" />
-							<extentControls:IconActionButton IconKind="FilePdfBox" ToolTipText="載入單一 PDF 文件" />
+							<!--<extentControls:IconActionButton IconKind="FolderOpen" ToolTipText="載入 PDF 資料夾" />-->
+							<extentControls:IconActionButton IconKind="FilePdfBox" ToolTipText="載入單一 PDF 文件" Command="{Binding OpenFileCommand}" />
 						</StackPanel>
 
 						<Separator

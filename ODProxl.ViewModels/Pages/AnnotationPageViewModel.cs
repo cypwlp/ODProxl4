@@ -5,11 +5,15 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Docnet.Core;
+using Docnet.Core.Models;
 using Microsoft.ML.OnnxRuntime;
 using ODProxl.ClientServices.Impls;
 using ODProxl.Utils.HttpService;
 using SkiaSharp;
 using System.Collections.ObjectModel;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace ODProxl.ViewModels.Pages
 {
@@ -19,6 +23,9 @@ namespace ODProxl.ViewModels.Pages
         private readonly IDialogService _dialogService;
         private readonly HttpClient _httpClient;
         private readonly IHttpRestClient _httpRestClient;
+        private readonly Global.Services.IConfigManager _configManager;
+        private string _imagesBaseUrl;
+        private string _labelsBaseUrl;
         #endregion
 
         #region 繪圖狀態（欄位）
@@ -45,6 +52,13 @@ namespace ODProxl.ViewModels.Pages
         #endregion
 
         #region 屬性（Bindable）
+
+        private string _currentModelFolder = "default";
+        public string CurrentModelFolder
+        {
+            get => _currentModelFolder;
+            set => SetProperty(ref _currentModelFolder, value);
+        }
         private bool _isPolygonMode;
         public bool IsPolygonMode
         {
@@ -82,6 +96,8 @@ namespace ODProxl.ViewModels.Pages
         public string MousePositionText { get => _mousePositionText; set => SetProperty(ref _mousePositionText, value); }
 
         public string ModeText => IsPolygonMode ? "多邊形模式" : "矩形模式";
+
+        public ObservableCollection<string> ExpectedImagePaths { get; } = new();
         #endregion
 
         #region 集合與選取項目
@@ -102,15 +118,25 @@ namespace ODProxl.ViewModels.Pages
         public DelegateCommand<Annotation> DeleteAnnotationCommand { get; }
         public AsyncDelegateCommand AutoAnnotateCommand { get; }
         public DelegateCommand AddNewClassCommand { get; }
+
+        public DelegateCommand OpenFileCommand { get; }
         #endregion
 
         #region 建構子
-        public AnnotationPageViewModel(IDialogService dialogService, IHttpRestClient httpRestClient, HttpClient httpClient)
+        public AnnotationPageViewModel(IDialogService dialogService, IHttpRestClient httpRestClient, HttpClient httpClient, Global.Services.IConfigManager configManager)
         {
             _dialogService = dialogService;
             _httpClient = httpClient;
             _httpRestClient = httpRestClient;
-
+            _configManager = configManager;
+            _configManager.ConfigChanged += () =>
+            {
+                _imagesBaseUrl = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
+                _labelsBaseUrl = _configManager.GetValue("source_pdf_base_path") ?? string.Empty;
+            };
+            // 初始化立即读取
+            _imagesBaseUrl = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
+            _labelsBaseUrl = _configManager.GetValue("source_pdf_base_path") ?? string.Empty;
             OpenImagesCommand = new AsyncDelegateCommand(OpenImagesAsync);
             SetRectModeCommand = new DelegateCommand(() => IsPolygonMode = false);
             SetPolygonModeCommand = new DelegateCommand(() => IsPolygonMode = true);
@@ -135,6 +161,163 @@ namespace ODProxl.ViewModels.Pages
             AutoAnnotateCommand = new AsyncDelegateCommand(RunAutoAnnotationAsync);
             AddNewClassCommand = new DelegateCommand(async () => await AddNewClassAsync());
         }
+        #endregion
+
+        #region 文件操作命令
+
+        private async Task EnsureLabelFolderExistsAsync()
+        {
+            string folderUrl = $"{_labelsBaseUrl}{CurrentModelFolder}/";
+            var headRequest = new HttpRequestMessage(HttpMethod.Head, folderUrl);
+            var headResponse = await _httpClient.SendAsync(headRequest);
+            if (headResponse.IsSuccessStatusCode)
+                return;
+            var mkcolMethod = new HttpMethod("MKCOL");
+            var mkcolRequest = new HttpRequestMessage(mkcolMethod, folderUrl);
+            var mkcolResponse = await _httpClient.SendAsync(mkcolRequest);
+
+            if (mkcolResponse.IsSuccessStatusCode)
+            {
+                StatusText = $"已建立标注文件夹：{CurrentModelFolder}";
+                return;
+            }
+            var placeholderContent = new StringContent("[]", Encoding.UTF8, "application/json");
+            var putResponse = await _httpClient.PutAsync(folderUrl + ".placeholder", placeholderContent);
+
+            if (putResponse.IsSuccessStatusCode)
+            {
+                StatusText = $"已通过占位文件建立文件夹：{CurrentModelFolder}";
+            }
+            else
+            {
+                StatusText = $"警告：无法创建文件夹 {CurrentModelFolder}，HTTP {putResponse.StatusCode}。后续保存可能失败。";
+            }
+        }
+        public async Task ProcessPdfFolderAsync(string folderPath)
+        {
+            var pdfFiles = Directory.GetFiles(folderPath, "*.pdf", SearchOption.TopDirectoryOnly);
+            await ProcessPdfFilesAsync(pdfFiles);
+        }
+
+        public async Task ProcessPdfFileAsync(string filePath)
+        {
+            await ProcessPdfFilesAsync(new[] { filePath });
+        }
+
+        private async Task ProcessPdfFilesAsync(IEnumerable<string> pdfPaths)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ExpectedImagePaths.Clear();
+                Annotations.Clear();
+                CurrentImage = null;
+                CurrentImageIndex = -1;
+                StatusText = "正在處理 PDF 文件...";
+            });
+
+            await EnsureLabelFolderExistsAsync();
+
+            int totalProcessed = 0;
+            foreach (var pdfPath in pdfPaths)
+            {
+                var pdfFileName = System.IO.Path.GetFileNameWithoutExtension(pdfPath);
+                int pageCount = 0;
+                try
+                {
+                    using var docReader = DocLib.Instance.GetDocReader(pdfPath, new PageDimensions(2480, 3508));
+                    pageCount = docReader.GetPageCount();
+                }
+                catch (Exception ex)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() => StatusText = $"無法讀取 PDF：{System.IO.Path.GetFileName(pdfPath)} - {ex.Message}");
+                    continue;
+                }
+
+                for (int page = 0; page < pageCount; page++)
+                {
+                    string imageName = $"{pdfFileName}_p{(page + 1):D3}.png";
+                    string imageHttpUrl = _imagesBaseUrl + imageName;
+                    bool existsOnServer = await ImageExistsOnServerAsync(imageHttpUrl);
+
+                    if (existsOnServer)
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            ExpectedImagePaths.Add(imageHttpUrl);
+                            totalProcessed++;
+                            StatusText = $"已從伺服器載入圖片 {imageName} ({totalProcessed} 張)";
+                            if (ExpectedImagePaths.Count == 1)
+                            {
+                                CurrentImageIndex = 0;
+                                _ = LoadImageAsync(0);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() => StatusText = $"正在轉換 300 DPI 圖片: {imageName}");
+                        byte[] pngBytes = await RenderPdfPageToPngAsync(pdfPath, page);
+                        await UploadImageToServerAsync(imageHttpUrl, pngBytes);
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            ExpectedImagePaths.Add(imageHttpUrl);
+                            totalProcessed++;
+                            StatusText = $"已轉換並上傳圖片 {imageName} ({totalProcessed} 張)";
+                            if (ExpectedImagePaths.Count == 1)
+                            {
+                                CurrentImageIndex = 0;
+                                _ = LoadImageAsync(0);
+                            }
+                        });
+                    }
+                }
+            }
+
+            await Dispatcher.UIThread.InvokeAsync(() => StatusText = $"處理完成，共 {totalProcessed} 張圖片（已自動同步至伺服器）");
+        }
+
+        private async Task<bool> ImageExistsOnServerAsync(string imageHttpUrl)
+        {
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Head, imageHttpUrl);
+                var response = await _httpClient.SendAsync(request);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private async Task<byte[]> RenderPdfPageToPngAsync(string pdfPath, int pageIndex)
+        {
+            return await Task.Run(() =>
+            {
+                using var docReader = DocLib.Instance.GetDocReader(pdfPath, new PageDimensions(2480, 3508));
+                using var pageReader = docReader.GetPageReader(pageIndex);
+                var rawBytes = pageReader.GetImage();
+                int width = pageReader.GetPageWidth();
+                int height = pageReader.GetPageHeight();
+                var info = new SKImageInfo(width, height, SKColorType.Bgra8888);
+                using var skData = SKData.CreateCopy(rawBytes);
+                using var skImage = SKImage.FromPixels(info, skData);
+                using var encoded = skImage.Encode(SKEncodedImageFormat.Png, 100);
+                using var ms = new MemoryStream();
+                encoded.SaveTo(ms);
+                return ms.ToArray();
+            });
+        }
+
+        private async Task UploadImageToServerAsync(string imageHttpUrl, byte[] pngBytes)
+        {
+            var content = new ByteArrayContent(pngBytes);
+            content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+            var response = await _httpClient.PutAsync(imageHttpUrl, content);
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"上傳圖片失敗: HTTP {(int)response.StatusCode}");
+        }
+
         #endregion
 
         #region 增量重繪方法

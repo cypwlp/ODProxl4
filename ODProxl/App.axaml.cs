@@ -2,6 +2,8 @@
 using ODProxl.ClientServices;
 using ODProxl.ClientServices.Impls;
 using ODProxl.Dialogs;
+using ODProxl.Global.Services;
+using ODProxl.Global.Services.impls;
 using ODProxl.Pages;
 using ODProxl.Utils.HttpService;
 using ODProxl.ViewModels.Dialogs;
@@ -19,6 +21,8 @@ namespace ODProxl
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<IAuthService, AuthService>();
+            containerRegistry.RegisterSingleton<IConfigManager, ConfigManager>();
+            containerRegistry.RegisterSingleton<ISignalRService, SignalRService>();
             containerRegistry.RegisterSingleton<HttpClient>();
             containerRegistry.RegisterSingleton<IHttpRestClient>(sp => new HttpRestClient(
                 new RestClient(),

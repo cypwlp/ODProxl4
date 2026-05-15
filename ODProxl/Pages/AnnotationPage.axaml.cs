@@ -150,4 +150,5 @@ public partial class AnnotationPage : UserControl
             vm.FinishPolygonIfPossible();
     }
     #endregion
+
 }

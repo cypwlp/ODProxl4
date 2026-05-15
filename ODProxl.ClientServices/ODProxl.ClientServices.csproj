@@ -8,6 +8,8 @@
 	<ItemGroup>
 		<ProjectReference Include="..\ODProxl.ClientCommonModels\ODProxl.ClientCommonModels.csproj" />
 		<ProjectReference Include="..\ODProxl.ClientDtos\ODProxl.ClientDtos.csproj" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+		<PackageReference Include="RestSharp" />
 		<PackageReference Include="SkiaSharp" />
 	</ItemGroup>
 </Project>

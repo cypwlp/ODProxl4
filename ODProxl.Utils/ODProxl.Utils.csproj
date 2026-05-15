@@ -5,6 +5,12 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
+		<AvaloniaXaml Remove="HttpService\impls\**" />
+		<Compile Remove="HttpService\impls\**" />
+		<EmbeddedResource Remove="HttpService\impls\**" />
+		<None Remove="HttpService\impls\**" />
+	</ItemGroup>
+	<ItemGroup>
 		<PackageReference Include="Avalonia" />
 		<PackageReference Include="Prism.DryIoc.Avalonia" />
 		<PackageReference Include="Prism.Avalonia" />
@@ -19,9 +25,10 @@
 		<PackageReference Include="Newtonsoft.Json" />
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\ODProxl.ClientServices\ODProxl.ClientServices.csproj" />
+		<Folder Include="TreeNode\" />
 	</ItemGroup>
 	<ItemGroup>
-		<Folder Include="TreeNode\" />
+		<ProjectReference Include="..\ODProxl.ClientDtos\ODProxl.ClientDtos.csproj" />
+		<ProjectReference Include="..\ODProxl.ClientServices\ODProxl.ClientServices.csproj" />
 	</ItemGroup>
 </Project>

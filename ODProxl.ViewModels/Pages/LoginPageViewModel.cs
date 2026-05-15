@@ -1,15 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using Material.Styles.Controls;
 using Material.Styles.Models;
 using ODProxl.ClientDtos;
 using ODProxl.ClientServices;
 using ODProxl.Utils.Events;
 using ODProxl.Utils.HttpService;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Navigation.Regions;
 using RestSharp;
 
 namespace ODProxl.ViewModels.Pages;
@@ -20,6 +15,8 @@ public class LoginPageViewModel : BindableBase, INavigationAware
     private readonly IRegionManager _regionManager;
     private readonly IEventAggregator _eventAggregator;
     private readonly IHttpRestClient _httpRestClient;
+    private readonly ISignalRService _signalRService;
+    private readonly Global.Services.IConfigManager _configManager;
 
     private string _userName = "";
     private string _password = "";
@@ -29,13 +26,16 @@ public class LoginPageViewModel : BindableBase, INavigationAware
         IAuthService authService,
         IRegionManager regionManager,
         IEventAggregator eventAggregator,
-        IHttpRestClient httpRestClient
-    )
+        IHttpRestClient httpRestClient,
+        ISignalRService signalRService,
+        Global.Services.IConfigManager configManager)
     {
         _authService = authService;
         _regionManager = regionManager;
         _eventAggregator = eventAggregator;
         _httpRestClient = httpRestClient;
+        _signalRService = signalRService;
+        _configManager = configManager;
         LoginCommand = new DelegateCommand(
             async () => await LoginAsync(),
             () => !IsBusy
@@ -73,7 +73,7 @@ public class LoginPageViewModel : BindableBase, INavigationAware
         IsBusy = true;
         try
         {
-            var request = new ClientRequest
+            var loginRequest = new ClientRequest
             {
                 Url = "Account/login",
                 Method = Method.Post,
@@ -81,34 +81,40 @@ public class LoginPageViewModel : BindableBase, INavigationAware
                 Parameters = new AccountDto { Username = UserName, Password = Password },
             };
 
-            var response = await _httpRestClient.ExecuteAsync<LoginRequestDto>(request);
+            var loginResponse = await _httpRestClient.ExecuteAsync<LoginRequestDto>(loginRequest);
 
-            if (response.IsSuccess && response.Data != null)
+            if (loginResponse.IsSuccess && loginResponse.Data != null)
             {
-                // 1. 將登錄信息寫入全局認證服務
-                _authService.SignIn(response.Data);
+                _authService.SignIn(loginResponse.Data);
 
-                // 2. 導航到主頁
+                await _signalRService.StartAsync();
+
+                var configRequest = new ClientRequest
+                {
+                    Url = "Config/getUserConfig",
+                    Method = Method.Get,
+                    ContentType = "application/json"
+                };
+                var configResponse = await _httpRestClient.ExecuteAsync<List<ConfigDto>>(configRequest);
+                if (configResponse.IsSuccess && configResponse.Data != null)
+                {
+                    _configManager.SetConfigs(configResponse.Data);
+                }
+
                 _regionManager.RequestNavigate("MainRegion", "HomePage");
             }
             else
             {
-                // ShowSnackbar("用戶名或密碼錯誤，請重試");
                 _eventAggregator
                     .GetEvent<PubSubEvent<NotificationMessage>>()
-                    .Publish(
-                        new NotificationMessage(
-                            $"用戶名或密碼錯誤，請重試",
-                            NotificationType.Warning
-                        )
-                    );
+                    .Publish(new NotificationMessage("用戶名或密碼錯誤，請重試", NotificationType.Warning));
             }
         }
         catch (Exception ex)
         {
             _eventAggregator
                 .GetEvent<PubSubEvent<NotificationMessage>>()
-                .Publish(new NotificationMessage($"錯誤" + ex, NotificationType.Warning));
+                .Publish(new NotificationMessage($"錯誤: {ex.Message}", NotificationType.Warning));
         }
         finally
         {
@@ -122,11 +128,7 @@ public class LoginPageViewModel : BindableBase, INavigationAware
         SnackbarHost.Post(snackbar, "LoginPageSnackbarHost", DispatcherPriority.Normal);
     }
 
-    #region INavigationAware
     public void OnNavigatedTo(NavigationContext navigationContext) { }
-
     public bool IsNavigationTarget(NavigationContext navigationContext) => true;
-
     public void OnNavigatedFrom(NavigationContext navigationContext) { }
-    #endregion
 }

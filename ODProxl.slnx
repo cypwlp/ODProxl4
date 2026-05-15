@@ -2,6 +2,7 @@
   <Project Path="ODProxl.ClientCommonModels/ODProxl.ClientCommonModels.csproj" Id="c753dd0f-0ab7-4f03-a32b-7c22d24d51fe" />
   <Project Path="ODProxl.ClientDtos/ODProxl.ClientDtos.csproj" Id="675f69f5-0d52-4281-9ac1-eb83d32cf024" />
   <Project Path="ODProxl.ClientServices/ODProxl.ClientServices.csproj" Id="1b894374-bc37-4ec0-b7c1-66dcd65d5d42" />
+  <Project Path="ODProxl.Global/ODProxl.Global.csproj" Id="f3bdb697-6b8c-4bc1-bc30-6a0a7921146e" />
   <Project Path="ODProxl.Utils/ODProxl.Utils.csproj" Id="36cfebe4-cac7-4a0c-9bc0-c8d75ac3833e" />
   <Project Path="ODProxl.ViewModels/ODProxl.ViewModels.csproj" Id="63f3de2f-16a0-44b5-8c7c-003a4b35cbc0" />
   <Project Path="ODProxl/ODProxl.csproj" />

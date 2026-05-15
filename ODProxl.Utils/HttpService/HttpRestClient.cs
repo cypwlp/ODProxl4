@@ -1,7 +1,6 @@
-﻿using System.Net;
-using Newtonsoft.Json;
-using ODProxl.ClientServices;
+﻿using Newtonsoft.Json;
 using RestSharp;
+using System.Net;
 
 namespace ODProxl.Utils.HttpService;
 
@@ -9,9 +8,9 @@ public class HttpRestClient : IHttpRestClient
 {
     private readonly RestClient _client;
     private readonly string _baseUrl;
-    private readonly IAuthService _authService;
+    private readonly ClientServices.IAuthService _authService;
 
-    public HttpRestClient(RestClient client, string baseUrl, IAuthService authService)
+    public HttpRestClient(RestClient client, string baseUrl, ClientServices.IAuthService authService)
     {
         _client = client;
         _baseUrl = baseUrl;
