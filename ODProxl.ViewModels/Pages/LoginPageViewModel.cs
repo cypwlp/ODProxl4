@@ -86,22 +86,8 @@ public class LoginPageViewModel : BindableBase, INavigationAware
             if (loginResponse.IsSuccess && loginResponse.Data != null)
             {
                 _authService.SignIn(loginResponse.Data);
-
-                await _signalRService.StartAsync();
-
-                var configRequest = new ClientRequest
-                {
-                    Url = "Config/getUserConfig",
-                    Method = Method.Get,
-                    ContentType = "application/json"
-                };
-                var configResponse = await _httpRestClient.ExecuteAsync<List<ConfigDto>>(configRequest);
-                if (configResponse.IsSuccess && configResponse.Data != null)
-                {
-                    _configManager.SetConfigs(configResponse.Data);
-                }
-
                 _regionManager.RequestNavigate("MainRegion", "HomePage");
+                _ = InitializeAfterLoginAsync();
             }
             else
             {
@@ -114,11 +100,34 @@ public class LoginPageViewModel : BindableBase, INavigationAware
         {
             _eventAggregator
                 .GetEvent<PubSubEvent<NotificationMessage>>()
-                .Publish(new NotificationMessage($"錯誤: {ex.Message}", NotificationType.Warning));
+                .Publish(new NotificationMessage($"登入失敗: {ex.Message}", NotificationType.Warning));
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task InitializeAfterLoginAsync()
+    {
+        try
+        {
+            await _signalRService.StartAsync();
+
+            var configRequest = new ClientRequest
+            {
+                Url = "Config/getUserConfig",
+                Method = Method.Get,
+                ContentType = "application/json"
+            };
+            var configResponse = await _httpRestClient.ExecuteAsync<List<ConfigDto>>(configRequest);
+            if (configResponse.IsSuccess && configResponse.Data != null)
+            {
+                _configManager.SetConfigs(configResponse.Data);
+            }
+        }
+        catch
+        {
         }
     }
 
