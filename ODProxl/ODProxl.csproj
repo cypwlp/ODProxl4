@@ -3,6 +3,7 @@
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
+		<LiveXamlDebug>true</LiveXamlDebug>
 		<ApplicationIcon>Assets\avalonia-logo.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<LangVersion>preview</LangVersion>
@@ -27,6 +28,7 @@
 		<PackageReference Include="DialogHost.Avalonia" />
 		<PackageReference Include="Material.Avalonia.DataGrid" />
 		<PackageReference Include="Docnet.Core" />
+		<PackageReference Include="Live.Avalonia"/>
 	</ItemGroup>
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />

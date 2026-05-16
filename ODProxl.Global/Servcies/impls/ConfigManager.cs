@@ -1,44 +1,57 @@
-﻿using ODProxl.ClientDtos;
+﻿// Global/Services/impls/ConfigManager.cs
+using ODProxl.ClientDtos;
+using ODProxl.Utils.HttpService;
 using RestSharp;
-
 
 namespace ODProxl.Global.Services.impls
 {
     public class ConfigManager : IConfigManager, IDisposable
     {
-        private readonly Utils.HttpService.IHttpRestClient _httpRestClient;
+        private readonly IHttpRestClient _httpRestClient;
         private readonly IEventAggregator _eventAggregator;
-        private Dictionary<string, string> _configs = new(StringComparer.OrdinalIgnoreCase);
         private readonly object _lock = new();
+
+        private Dictionary<string, string> _configValues = new(StringComparer.OrdinalIgnoreCase);
+        private List<ConfigDto> _configs = new();
 
         public event Action? ConfigChanged;
 
-        public ConfigManager(Utils.HttpService.IHttpRestClient httpRestClient, IEventAggregator eventAggregator)
+        public ConfigManager(IHttpRestClient httpRestClient, IEventAggregator eventAggregator)
         {
             _httpRestClient = httpRestClient;
             _eventAggregator = eventAggregator;
 
-            _eventAggregator.GetEvent<PubSubEvent<List<ConfigDto>>>()
-                .Subscribe(configs => SetConfigs(configs));
-
+            // 訂閱 SignalR 傳來的設定變更通知，自動從伺服器拉取最新設定
             _eventAggregator.GetEvent<PubSubEvent<string>>()
                 .Subscribe(async _ => await RefreshAsync());
+        }
+
+        public IReadOnlyList<ConfigDto> AllConfigs
+        {
+            get
+            {
+                lock (_lock)
+                    return _configs.AsReadOnly();
+            }
         }
 
         public string? GetValue(string key)
         {
             lock (_lock)
-            {
-                return _configs.TryGetValue(key, out var value) ? value : null;
-            }
+                return _configValues.TryGetValue(key, out var value) ? value : null;
         }
 
         public void SetConfigs(List<ConfigDto> configs)
         {
             lock (_lock)
             {
-                _configs = configs.ToDictionary(c => c.CgKey, c => c.CgValue, StringComparer.OrdinalIgnoreCase);
+                _configs = new List<ConfigDto>(configs);
+                _configValues = configs.ToDictionary(
+                    c => c.CgKey,
+                    c => c.CgValue,
+                    StringComparer.OrdinalIgnoreCase);
             }
+            // 通知所有訂閱者設定已變更
             ConfigChanged?.Invoke();
         }
 
@@ -46,9 +59,9 @@ namespace ODProxl.Global.Services.impls
         {
             try
             {
-                var request = new Utils.HttpService.ClientRequest
+                var request = new ClientRequest
                 {
-                    Url = "Config/getUserConfig",
+                    Url = "Config",
                     Method = Method.Get,
                     ContentType = "application/json"
                 };
@@ -60,11 +73,10 @@ namespace ODProxl.Global.Services.impls
             }
             catch
             {
+                // 忽略網路錯誤，避免干擾使用者
             }
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

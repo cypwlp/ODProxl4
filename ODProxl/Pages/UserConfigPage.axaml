@@ -173,7 +173,10 @@
                                             Height="32"
                                             Foreground="{DynamicResource ErrorBrush}"
                                             Kind="CodeTags" />
-										<StackPanel Spacing="4">
+										<StackPanel
+                                            HorizontalAlignment="Center"
+                                            Orientation="Vertical"
+                                            Spacing="4">
 											<TextBlock
                                                 Classes="Headline6"
                                                 Foreground="{DynamicResource ErrorBrush}"
@@ -181,69 +184,56 @@
 											<TextBlock
                                                 Classes="Body2"
                                                 Opacity="0.7"
-                                                Text="僅供開發與除錯使用，請勿在正式環境修改" />
+                                                Text="開發者配置項" />
+
+										</StackPanel>
+										<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+											<et:IconActionButton
+                                                Height="40"
+                                                Command="{Binding AddDeveloperSettingCommand}"
+                                                IconKind="AddAlert"
+                                                Text="新增" />
+											<et:IconActionButton
+                                                Height="40"
+                                                Margin="10,0,0,0"
+                                                Command="{Binding EditDeveloperSettingCommand}"
+                                                IconKind="Edit"
+                                                Text="修改" />
 										</StackPanel>
 									</StackPanel>
 									<Separator />
-									<Grid
-                                        Margin="0"
-                                        ColumnDefinitions="Auto,*,Auto"
-                                        RowDefinitions="Auto,Auto,Auto,Auto">
-										<TextBlock
-                                            Grid.Row="0"
-                                            Grid.Column="0"
-                                            VerticalAlignment="Center"
-                                            Classes="Body1"
-                                            Text="Onnx模型根路徑" />
-										<TextBox
-                                            Grid.Row="0"
-                                            Grid.Column="1"
-                                            Margin="32,0,0,0"
-                                            HorizontalAlignment="Stretch"
-                                            Text="{Binding ModelBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                            Watermark="例如：C:\Models\Onnx 或 https://..." />
+									<Grid Margin="0">
+										<DataGrid
+                                            AutoGenerateColumns="False"
+                                            Background="{DynamicResource MaterialCardBackgroundBrush}"
+                                            CanUserReorderColumns="False"
+                                            GridLinesVisibility="Horizontal"
+                                            IsReadOnly="True"
+                                            ItemsSource="{Binding Products}"
+                                            RowBackground="{DynamicResource MaterialCardBackgroundBrush}">
 
-										<TextBlock
-                                            Grid.Row="1"
-                                            Grid.Column="0"
-                                            Margin="0,20,0,0"
-                                            VerticalAlignment="Center"
-                                            Classes="Body1"
-                                            Text="Github路徑" />
-										<TextBox
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            Margin="32,20,0,0"
-                                            HorizontalAlignment="Stretch"
-                                            Text="{Binding GithubUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                            Watermark="https://github.com/..." />
+											<DataGrid.Columns>
+												<DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding CgType}"
+                                                    Header="類型" />
 
-										<TextBlock
-                                            Grid.Row="2"
-                                            Grid.Column="0"
-                                            Margin="0,20,0,0"
-                                            VerticalAlignment="Center"
-                                            Classes="Body1"
-                                            Text="國內服務器根路徑" />
-										<TextBox
-                                            Grid.Row="2"
-                                            Grid.Column="1"
-                                            Margin="32,20,0,0"
-                                            HorizontalAlignment="Stretch"
-                                            Text="{Binding CNServiceUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                            Watermark="https://cn.example.com/api" />
+												<DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding CgModuleName}"
+                                                    Header="配置名稱" />
 
-										<StackPanel
-                                            Grid.Row="3"
-                                            Grid.Column="1"
-                                            Margin="32,20,0,0"
-                                            Orientation="Horizontal"
-                                            Spacing="20">
-											<CheckBox Content="啟用詳細日誌" IsChecked="{Binding EnableVerboseLogging, Mode=TwoWay}" />
-											<CheckBox Content="啟用效能監控" IsChecked="{Binding EnablePerformanceMonitoring, Mode=TwoWay}" />
-											<CheckBox Content="顯示除錯資訊" IsChecked="{Binding ShowDebugInfo, Mode=TwoWay}" />
-											<CheckBox Content="繞過生產檢查" IsChecked="{Binding BypassProductionChecks, Mode=TwoWay}" />
-										</StackPanel>
+												<DataGridTextColumn
+                                                    Width="2*"
+                                                    Binding="{Binding CgKey}"
+                                                    Header="配置鍵名" />
+
+												<DataGridCheckBoxColumn
+                                                    Width="100"
+                                                    Binding="{Binding CgValue}"
+                                                    Header="配置值" />
+											</DataGrid.Columns>
+										</DataGrid>
 									</Grid>
 									<Rectangle Height="8" Fill="Transparent" />
 								</StackPanel>

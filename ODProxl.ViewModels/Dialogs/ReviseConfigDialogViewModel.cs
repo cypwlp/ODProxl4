@@ -1,58 +1,94 @@
-﻿namespace ODProxl.ViewModels.Dialogs
+﻿// ReviseConfigDialogViewModel.cs
+using ODProxl.ClientDtos;
+
+namespace ODProxl.ViewModels.Dialogs
 {
     public class ReviseConfigDialogViewModel : BindableBase, IDialogAware
     {
-        #region IDialogAware 成員
-        public string? Title;
-        public DialogCloseListener RequestClose { get; set; }
-
-        public bool CanCloseDialog()
-        {
-            return true;
-        }
-
-        public void OnDialogClosed()
-        {
-
-        }
-
-        public void OnDialogOpened(IDialogParameters parameters)
-        {
-
-        }
-        #endregion
-
-        #region 字段與構造函數
-        private string _configName;
-        private string _configKey;
-        private string _configValue;
+        private string _configName = string.Empty;
+        private string _configKey = string.Empty;
+        private string _configValue = string.Empty;
+        private bool _isGlobal;
 
         public ReviseConfigDialogViewModel()
         {
+            OkCommand = new DelegateCommand(Submit, () =>
+                !string.IsNullOrWhiteSpace(ConfigName) &&
+                !string.IsNullOrWhiteSpace(ConfigKey))
+                .ObservesProperty(() => ConfigName)
+                .ObservesProperty(() => ConfigKey);
 
+            CancelCommand = new DelegateCommand(() =>
+                RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel)));
         }
 
-        #endregion
-
-        #region 屬性
         public string ConfigName
         {
-            get { return _configName; }
-            set { SetProperty(ref _configName, value); }
+            get => _configName;
+            set => SetProperty(ref _configName, value);
         }
 
         public string ConfigKey
         {
-            get { return _configKey; }
-            set { SetProperty(ref _configKey, value); }
+            get => _configKey;
+            set => SetProperty(ref _configKey, value);
         }
 
         public string ConfigValue
         {
-            get { return _configValue; }
-            set { SetProperty(ref _configValue, value); }
+            get => _configValue;
+            set => SetProperty(ref _configValue, value);
         }
-        #endregion
 
+        public bool IsGlobal
+        {
+            get => _isGlobal;
+            set => SetProperty(ref _isGlobal, value);
+        }
+
+        public DelegateCommand OkCommand { get; }
+        public DelegateCommand CancelCommand { get; }
+
+        public string Title => "設定";
+
+        DialogCloseListener IDialogAware.RequestClose { get; }
+
+        public event Action<IDialogResult>? RequestClose;
+
+        public bool CanCloseDialog() => true;
+
+        public void OnDialogClosed() { }
+
+        public void OnDialogOpened(IDialogParameters parameters)
+        {
+            if (parameters.TryGetValue<ConfigDto>("config", out var config))
+            {
+                ConfigName = config.CgModuleName ?? "";
+                ConfigKey = config.CgKey;
+                ConfigValue = config.CgValue;
+                IsGlobal = config.CgUserAccount == "AllUser";
+            }
+        }
+
+        private void Submit()
+        {
+            var resultConfig = new ConfigDto
+            {
+                CgId = 0,
+                CgUserAccount = IsGlobal ? "AllUser" : null,
+                CgModuleName = ConfigName,
+                CgKey = ConfigKey,
+                CgValue = ConfigValue
+            };
+
+            if (RequestClose != null)
+            {
+                var parameters = new DialogParameters
+                {
+                    { "resultConfig", resultConfig }
+                };
+                RequestClose.Invoke(new DialogResult(ButtonResult.OK) { Parameters = parameters });
+            }
+        }
     }
 }
