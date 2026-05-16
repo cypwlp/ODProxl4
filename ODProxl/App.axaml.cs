@@ -46,6 +46,7 @@ namespace ODProxl
             containerRegistry.RegisterDialog<RevisionDetailsDialog, RevisionDetailsDialogViewModel>();
             containerRegistry.RegisterDialog<RevisionConditionsDialog, RevisionConditionsDialogViewModel>();
             containerRegistry.RegisterDialog<ReviseProductGroupDialog, ReviseProductGroupDialogViewModel>();
+            containerRegistry.RegisterDialog<ReviseConfigDialog, ReviseConfigDialogViewModel>();
         }
 
         protected override AvaloniaObject CreateShell()

@@ -1,5 +1,6 @@
-﻿// UserConfigPageViewModel.cs
+﻿// ODProxl/ViewModels/Pages/UserConfigPageViewModel.cs
 using ODProxl.ClientDtos;
+using ODProxl.ClientServices;
 using ODProxl.Global.Services;
 using ODProxl.Utils.HttpService;
 using RestSharp;
@@ -12,20 +13,24 @@ namespace ODProxl.ViewModels.Pages
         private readonly IConfigManager _configManager;
         private readonly IDialogService _dialogService;
         private readonly IHttpRestClient _httpRestClient;
+        private readonly IAuthService _authService;
 
-        private ObservableCollection<ConfigDto> _allConfigs = new();
-        private ObservableCollection<ConfigDto> _developerConfigs = new();
+        private ObservableCollection<ConfigDto> _allConfigs;
+        private ObservableCollection<ConfigDto> _developerConfigs;
         private ConfigDto? _selectedDeveloperConfig;
         private bool _hasChanges;
+        private bool _isDeveloperMode;
 
         public UserConfigPageViewModel(
             IConfigManager configManager,
             IDialogService dialogService,
-            IHttpRestClient httpRestClient)
+            IHttpRestClient httpRestClient,
+            IAuthService authService)
         {
             _configManager = configManager;
             _dialogService = dialogService;
             _httpRestClient = httpRestClient;
+            _authService = authService;
 
             _configManager.ConfigChanged += LoadConfigsFromManager;
 
@@ -64,6 +69,12 @@ namespace ODProxl.ViewModels.Pages
             set => SetProperty(ref _hasChanges, value);
         }
 
+        public bool IsDeveloperMode
+        {
+            get => _isDeveloperMode;
+            set => SetProperty(ref _isDeveloperMode, value);
+        }
+
         public DelegateCommand AddDeveloperSettingCommand { get; }
         public DelegateCommand EditDeveloperSettingCommand { get; }
         public AsyncDelegateCommand SaveCommand { get; }
@@ -75,6 +86,23 @@ namespace ODProxl.ViewModels.Pages
             AllConfigs = new ObservableCollection<ConfigDto>(configs);
             DeveloperConfigs = new ObservableCollection<ConfigDto>(
                 configs.Where(c => c.CgType == "開發者設定" || c.CgModuleName == "允許開發者設定"));
+
+            var developerModeConfig = configs.FirstOrDefault(c => c.CgModuleName == "允許開發者設定");
+            if (developerModeConfig != null && !string.IsNullOrWhiteSpace(developerModeConfig.CgType))
+            {
+                var allowedUsers = developerModeConfig.CgType
+                    .Split(',', System.StringSplitOptions.RemoveEmptyEntries)
+                    .Select(u => u.Trim())
+                    .ToList();
+
+                var currentUser = _authService.CurrentUser?.Username;
+                IsDeveloperMode = allowedUsers.Contains(currentUser, System.StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                IsDeveloperMode = false;
+            }
+
             HasChanges = false;
         }
 
@@ -141,46 +169,29 @@ namespace ODProxl.ViewModels.Pages
 
         private async Task SaveAllChangesAsync()
         {
-            foreach (var config in _allConfigs)
+            var batchItems = _allConfigs.Select(c => new
             {
-                var dto = new CreateUserConfigDto
-                {
-                    ConfigKey = config.CgKey,
-                    ConfigValue = config.CgValue,
-                    ConfigUserAccount = config.CgUserAccount
-                };
+                cgId = c.CgId,
+                configKey = c.CgKey,
+                configValue = c.CgValue,
+                configUserAccount = c.CgUserAccount,
+                cgModuleName = c.CgModuleName
+            }).ToList();
 
-                ClientRequest request;
-                if (config.CgId > 0)
-                {
-                    request = new ClientRequest
-                    {
-                        Url = $"Config/{config.CgId}",
-                        Method = Method.Put,
-                        ContentType = "application/json",
-                        Parameters = dto
-                    };
-                }
-                else
-                {
-                    request = new ClientRequest
-                    {
-                        Url = "Config",
-                        Method = Method.Post,
-                        ContentType = "application/json",
-                        Parameters = dto
-                    };
-                }
+            var request = new ClientRequest
+            {
+                Url = "Config/batch",
+                Method = Method.Post,
+                ContentType = "application/json",
+                Parameters = batchItems
+            };
 
-                var response = await _httpRestClient.ExecuteAsync<ConfigDto>(request);
-                if (!response.IsSuccess)
-                {
-                    break;
-                }
+            var response = await _httpRestClient.ExecuteAsync<List<ConfigDto>>(request);
+            if (response.IsSuccess)
+            {
+                await _configManager.RefreshAsync();
+                HasChanges = false;
             }
-
-            await _configManager.RefreshAsync();
-            HasChanges = false;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)

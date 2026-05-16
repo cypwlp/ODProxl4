@@ -160,7 +160,7 @@
                         Background="Transparent"
                         BoxShadow="0 4 16 0 #1F000000"
                         CornerRadius="16"
-                        IsVisible="{Binding IsDeveloperMode, Mode=OneWay}">
+                        IsVisible="{Binding IsDeveloperMode, Mode=TwoWay}">
 						<Border
                             Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
                             ClipToBounds="True"
@@ -209,7 +209,7 @@
                                             CanUserReorderColumns="False"
                                             GridLinesVisibility="Horizontal"
                                             IsReadOnly="True"
-                                            ItemsSource="{Binding Products}"
+                                            ItemsSource="{Binding DeveloperConfigs}"
                                             RowBackground="{DynamicResource MaterialCardBackgroundBrush}">
 
 											<DataGrid.Columns>
