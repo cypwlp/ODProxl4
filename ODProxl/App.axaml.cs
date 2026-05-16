@@ -40,6 +40,7 @@ namespace ODProxl
             containerRegistry.RegisterForNavigation<RuleMakingPage, RuleMakingPageViewModel>();
             containerRegistry.RegisterForNavigation<ProductPage, ProductPageViewModel>();
             containerRegistry.RegisterForNavigation<ProductGroupPage, ProductGroupPageViewModel>();
+            containerRegistry.RegisterForNavigation<UserConfigPage, UserConfigPageViewModel>();
             containerRegistry.RegisterDialog<AddOrEditProductDialog, AddOrEditProductDialogViewModel>();
             containerRegistry.RegisterDialog<RevisedRulesDialog, RevisedRulesDialogViewModel>();
             containerRegistry.RegisterDialog<RevisionDetailsDialog, RevisionDetailsDialogViewModel>();

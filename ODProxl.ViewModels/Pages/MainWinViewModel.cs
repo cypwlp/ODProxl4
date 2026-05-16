@@ -223,8 +223,8 @@ namespace ODProxl.ViewModels.Pages
                         new LeftMenuItem
                         {
                             Icon = MaterialIconKind.Account,
-                            Title = "個人中心",
-                            ViewName = "UserPreferencePage",
+                            Title = "用戶中心",
+                            ViewName = "UserConfigPage",
                             LimitUserName = new ObservableCollection<string> { "AllUser" },
                         },
                     },

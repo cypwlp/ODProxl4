@@ -1,0 +1,259 @@
+﻿<UserControl
+    x:Class="ODProxl.Pages.UserConfigPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:et="clr-namespace:ODProxl.ExtendControls;assembly=ODProxl"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+	<et:PageContainer>
+
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+
+			<!--  底部按鈕區域  -->
+			<Border
+                Grid.Row="1"
+                Margin="32,20,32,32"
+                Padding="0,20,0,0"
+                Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                CornerRadius="20">
+				<StackPanel
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="15">
+					<Button
+                        MinWidth="120"
+                        Content="取消"
+                        Theme="{DynamicResource MaterialOutlinedButton}" />
+					<Button
+                        MinWidth="140"
+                        Command="{Binding SaveCommandAsync}"
+                        Content="儲存變更"
+                        IsEnabled="{Binding CanSave, Mode=OneWay}"
+                        Theme="{DynamicResource MaterialFilledButton}" />
+				</StackPanel>
+			</Border>
+
+			<!--  內容區域  -->
+			<ScrollViewer
+                Grid.Row="0"
+                Padding="32,24,32,24"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+
+				<StackPanel
+                    MaxWidth="920"
+                    HorizontalAlignment="Stretch"
+                    Spacing="40">
+
+					<!--  外觀區塊  -->
+					<Border
+                        Padding="28"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BoxShadow="0 4 16 0 #1F000000"
+                        Classes="Card"
+                        CornerRadius="16">
+						<StackPanel Spacing="24">
+							<StackPanel Orientation="Horizontal" Spacing="16">
+								<avalonia:MaterialIcon
+                                    Width="32"
+                                    Height="32"
+                                    Foreground="{DynamicResource PrimaryBrush}"
+                                    Kind="Palette" />
+								<StackPanel Spacing="4">
+									<TextBlock Classes="Headline6" Text="外觀" />
+									<TextBlock
+                                        Classes="Body2"
+                                        Opacity="0.7"
+                                        Text="主題、顏色與語言" />
+								</StackPanel>
+							</StackPanel>
+							<Separator />
+							<Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+								<TextBlock
+                                    Grid.Row="0"
+                                    VerticalAlignment="Center"
+                                    Classes="Body1"
+                                    Text="應用程式主題" />
+								<ComboBox
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Width="{OnFormFactor Desktop=240,
+                                                         Mobile=200}"
+                                    SelectedIndex="0">
+									<ComboBoxItem>跟隨系統</ComboBoxItem>
+									<ComboBoxItem>淺色</ComboBoxItem>
+									<ComboBoxItem>深色</ComboBoxItem>
+								</ComboBox>
+								<TextBlock
+                                    Grid.Row="1"
+                                    Margin="0,20,0,0"
+                                    VerticalAlignment="Center"
+                                    Classes="Body1"
+                                    Text="語言" />
+								<ComboBox
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Width="{OnFormFactor Desktop=240,
+                                                         Mobile=200}"
+                                    Margin="0,20,0,0">
+									<ComboBoxItem>繁體中文 (台灣)</ComboBoxItem>
+									<ComboBoxItem>繁體中文 (香港)</ComboBoxItem>
+									<ComboBoxItem>English</ComboBoxItem>
+									<ComboBoxItem>简体中文</ComboBoxItem>
+								</ComboBox>
+								<TextBlock
+                                    Grid.Row="2"
+                                    Margin="0,20,0,0"
+                                    VerticalAlignment="Center"
+                                    Classes="Body1"
+                                    Text="啟用平滑動畫" />
+								<ToggleSwitch
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Margin="0,20,0,0"
+                                    IsChecked="True" />
+							</Grid>
+						</StackPanel>
+					</Border>
+
+					<!--  通知區塊  -->
+					<Border
+                        Padding="28"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BoxShadow="0 4 16 0 #1F000000"
+                        Classes="Card"
+                        CornerRadius="16">
+						<StackPanel Spacing="24">
+							<StackPanel Orientation="Horizontal" Spacing="16">
+								<avalonia:MaterialIcon
+                                    Width="32"
+                                    Height="32"
+                                    Foreground="{DynamicResource PrimaryBrush}"
+                                    Kind="Notifications" />
+								<StackPanel Spacing="4">
+									<TextBlock Classes="Headline6" Text="通知" />
+									<TextBlock
+                                        Classes="Body2"
+                                        Opacity="0.7"
+                                        Text="接收更新與提醒" />
+								</StackPanel>
+							</StackPanel>
+							<Separator />
+							<StackPanel Spacing="12">
+								<CheckBox Content="啟用桌面通知" IsChecked="True" />
+								<CheckBox Content="接收系統更新通知" IsChecked="True" />
+								<CheckBox Content="顯示每日提示" IsChecked="False" />
+							</StackPanel>
+						</StackPanel>
+					</Border>
+
+					<!--  開發者設定區塊  -->
+					<Border
+                        Background="Transparent"
+                        BoxShadow="0 4 16 0 #1F000000"
+                        CornerRadius="16"
+                        IsVisible="{Binding IsDeveloperMode, Mode=OneWay}">
+						<Border
+                            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                            ClipToBounds="True"
+                            CornerRadius="16">
+							<Border Padding="28,28,28,44">
+								<StackPanel Spacing="24">
+									<StackPanel Orientation="Horizontal" Spacing="16">
+										<avalonia:MaterialIcon
+                                            Width="32"
+                                            Height="32"
+                                            Foreground="{DynamicResource ErrorBrush}"
+                                            Kind="CodeTags" />
+										<StackPanel Spacing="4">
+											<TextBlock
+                                                Classes="Headline6"
+                                                Foreground="{DynamicResource ErrorBrush}"
+                                                Text="開發者設定" />
+											<TextBlock
+                                                Classes="Body2"
+                                                Opacity="0.7"
+                                                Text="僅供開發與除錯使用，請勿在正式環境修改" />
+										</StackPanel>
+									</StackPanel>
+									<Separator />
+									<Grid
+                                        Margin="0"
+                                        ColumnDefinitions="Auto,*,Auto"
+                                        RowDefinitions="Auto,Auto,Auto,Auto">
+										<TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            VerticalAlignment="Center"
+                                            Classes="Body1"
+                                            Text="Onnx模型根路徑" />
+										<TextBox
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Margin="32,0,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            Text="{Binding ModelBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Watermark="例如：C:\Models\Onnx 或 https://..." />
+
+										<TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Margin="0,20,0,0"
+                                            VerticalAlignment="Center"
+                                            Classes="Body1"
+                                            Text="Github路徑" />
+										<TextBox
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Margin="32,20,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            Text="{Binding GithubUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Watermark="https://github.com/..." />
+
+										<TextBlock
+                                            Grid.Row="2"
+                                            Grid.Column="0"
+                                            Margin="0,20,0,0"
+                                            VerticalAlignment="Center"
+                                            Classes="Body1"
+                                            Text="國內服務器根路徑" />
+										<TextBox
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Margin="32,20,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            Text="{Binding CNServiceUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Watermark="https://cn.example.com/api" />
+
+										<StackPanel
+                                            Grid.Row="3"
+                                            Grid.Column="1"
+                                            Margin="32,20,0,0"
+                                            Orientation="Horizontal"
+                                            Spacing="20">
+											<CheckBox Content="啟用詳細日誌" IsChecked="{Binding EnableVerboseLogging, Mode=TwoWay}" />
+											<CheckBox Content="啟用效能監控" IsChecked="{Binding EnablePerformanceMonitoring, Mode=TwoWay}" />
+											<CheckBox Content="顯示除錯資訊" IsChecked="{Binding ShowDebugInfo, Mode=TwoWay}" />
+											<CheckBox Content="繞過生產檢查" IsChecked="{Binding BypassProductionChecks, Mode=TwoWay}" />
+										</StackPanel>
+									</Grid>
+									<Rectangle Height="8" Fill="Transparent" />
+								</StackPanel>
+							</Border>
+						</Border>
+					</Border>
+
+					<Rectangle Height="64" Fill="Transparent" />
+				</StackPanel>
+			</ScrollViewer>
+		</Grid>
+	</et:PageContainer>
+</UserControl>

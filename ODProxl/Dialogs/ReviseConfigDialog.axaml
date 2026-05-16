@@ -1,0 +1,70 @@
+﻿<UserControl
+    x:Class="ODProxl.ReviseConfigDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:micons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:vm="clr-namespace:ODProxl.ViewModels.Dialogs;assembly=ODProxl.ViewModels"
+    d:DesignHeight="400"
+    d:DesignWidth="647"
+    x:DataType="vm:ReviseConfigDialogViewModel"
+    mc:Ignorable="d">
+	<Border
+        Padding="40,32"
+        Background="{DynamicResource MaterialSurfaceColor}"
+        BoxShadow="0 12 40 0 #33000000"
+        CornerRadius="28">
+		<StackPanel Spacing="28">
+
+			<TextBox
+                MinHeight="52"
+                Padding="16,14"
+                Classes="Filled"
+                CornerRadius="16"
+                FontSize="16"
+                MaxLines="1"
+                Text="{Binding ConfigName, Mode=TwoWay}"
+                Watermark="配置名稱" />
+			<TextBox
+                MinHeight="52"
+                Padding="16,14"
+                Classes="Filled"
+                CornerRadius="16"
+                FontSize="16"
+                MaxLines="1"
+                Text="{Binding ConfigKey, Mode=TwoWay}"
+                Watermark="配置鍵名" />
+			<TextBox
+                MinHeight="52"
+                Padding="16,14"
+                Classes="Filled"
+                CornerRadius="16"
+                FontSize="16"
+                MaxLines="1"
+                Text="{Binding ConfigValue, Mode=TwoWay}"
+                Watermark="配置值" />
+
+
+			<CheckBox Content="全局" ToolTip.Tip="选中此项将為所有用戶使用此配置" />
+
+			<StackPanel
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="12">
+				<Button
+                    MinWidth="110"
+                    Classes="Outlined"
+                    Command="{Binding CancelCommand}"
+                    Content="取消"
+                    CornerRadius="16" />
+				<Button
+                    MinWidth="110"
+                    Classes="Filled"
+                    Command="{Binding OkCommand}"
+                    Content="確定新增"
+                    CornerRadius="16" />
+			</StackPanel>
+		</StackPanel>
+	</Border>
+</UserControl>
