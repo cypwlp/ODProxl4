@@ -173,6 +173,7 @@ namespace ODProxl.ViewModels.Pages
             {
                 cgId = c.CgId,
                 configKey = c.CgKey,
+                cgtype = c.CgType,
                 configValue = c.CgValue,
                 configUserAccount = c.CgUserAccount,
                 cgModuleName = c.CgModuleName

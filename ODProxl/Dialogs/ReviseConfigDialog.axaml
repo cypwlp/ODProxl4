@@ -46,7 +46,10 @@
                 Watermark="配置值" />
 
 
-			<CheckBox Content="全局" ToolTip.Tip="选中此项将為所有用戶使用此配置" />
+			<CheckBox
+                Content="全局"
+                IsChecked="{Binding IsGlobal, Mode=TwoWay}"
+                ToolTip.Tip="选中此项将為所有用戶使用此配置" />
 
 			<StackPanel
                 HorizontalAlignment="Right"
@@ -62,7 +65,7 @@
                     MinWidth="110"
                     Classes="Filled"
                     Command="{Binding OkCommand}"
-                    Content="確定新增"
+                    Content="{Binding ConfirmButtonText}"
                     CornerRadius="16" />
 			</StackPanel>
 		</StackPanel>

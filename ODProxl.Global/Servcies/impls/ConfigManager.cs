@@ -51,7 +51,6 @@ namespace ODProxl.Global.Services.impls
                     c => c.CgValue,
                     StringComparer.OrdinalIgnoreCase);
             }
-            // 通知所有訂閱者設定已變更
             ConfigChanged?.Invoke();
         }
 
@@ -73,7 +72,7 @@ namespace ODProxl.Global.Services.impls
             }
             catch
             {
-                // 忽略網路錯誤，避免干擾使用者
+
             }
         }
 

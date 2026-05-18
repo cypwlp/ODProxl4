@@ -116,7 +116,7 @@ public class LoginPageViewModel : BindableBase, INavigationAware
 
             var configRequest = new ClientRequest
             {
-                Url = "Config/getUserConfig",
+                Url = "Config",
                 Method = Method.Get,
                 ContentType = "application/json"
             };

@@ -34,7 +34,7 @@
                         Theme="{DynamicResource MaterialOutlinedButton}" />
 					<Button
                         MinWidth="140"
-                        Command="{Binding SaveCommandAsync}"
+                        Command="{Binding SaveCommand}"
                         Content="儲存變更"
                         IsEnabled="{Binding CanSave, Mode=OneWay}"
                         Theme="{DynamicResource MaterialFilledButton}" />
@@ -210,7 +210,8 @@
                                             GridLinesVisibility="Horizontal"
                                             IsReadOnly="True"
                                             ItemsSource="{Binding DeveloperConfigs}"
-                                            RowBackground="{DynamicResource MaterialCardBackgroundBrush}">
+                                            RowBackground="{DynamicResource MaterialCardBackgroundBrush}"
+                                            SelectedItem="{Binding SelectedDeveloperConfig}">
 
 											<DataGrid.Columns>
 												<DataGridTextColumn
@@ -227,9 +228,8 @@
                                                     Width="2*"
                                                     Binding="{Binding CgKey}"
                                                     Header="配置鍵名" />
-
-												<DataGridCheckBoxColumn
-                                                    Width="100"
+												<DataGridTextColumn
+                                                    Width="2*"
                                                     Binding="{Binding CgValue}"
                                                     Header="配置值" />
 											</DataGrid.Columns>
