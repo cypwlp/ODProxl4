@@ -1,13 +1,16 @@
 ﻿<UserControl
-    x:Class="ODProxl.Pages.ClassPage"
+    x:Class="ODProxl.Pages.RuleClassPage"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:et="clr-namespace:ODProxl.ExtendControls;assembly=ODProxl"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tdg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.TreeDataGrid"
+    xmlns:vm="clr-namespace:ODProxl.ViewModels.Pages;assembly=ODProxl.ViewModels"
     d:DesignHeight="618"
     d:DesignWidth="1000"
+    x:DataType="vm:RuleClassPageViewModel"
     mc:Ignorable="d">
 	<et:PageContainer>
 		<Border>
@@ -16,16 +19,15 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition />
 				</Grid.RowDefinitions>
+
 				<StackPanel
                     Grid.Row="0"
                     Margin="20,20,24,16"
                     Orientation="Horizontal"
                     Spacing="8">
-
 					<TextBox
                         Name="SearchBox"
                         Width="340"
-                        HorizontalAlignment="Left"
                         Classes="solo"
                         CornerRadius="24"
                         Text="{Binding SearchText}"
@@ -66,69 +68,13 @@
                         Command="{Binding EditSelectedCommand}"
                         IconKind="EditCircle"
                         Text="覆蓋圖標符號" />
-
 				</StackPanel>
 
-				<DataGrid
+				<tdg:TreeDataGrid
                     Grid.Row="1"
                     Margin="12,0,12,16"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    CanUserReorderColumns="False"
-                    CanUserResizeColumns="True"
-                    GridLinesVisibility="None"
-                    ItemsSource="{Binding UserModels}"
-                    RowBackground="{DynamicResource MaterialCardBackgroundBrush}"
-                    SelectedItem="{Binding SelectedModel, Mode=TwoWay}">
-
-					<DataGrid.Columns>
-						<DataGridTextColumn
-                            Width="65"
-                            Binding="{Binding RowIndex}"
-                            Header="序號"
-                            IsReadOnly="True" />
-						<DataGridTextColumn
-                            Width="100"
-                            Binding="{Binding ModelId}"
-                            Header="類別名稱"
-                            IsReadOnly="True" />
-						<DataGridTextColumn
-                            Width="100"
-                            Binding="{Binding ModelName}"
-                            Header="類別鍵"
-                            IsReadOnly="True" />
-						<DataGridTextColumn
-                            Width="100"
-                            Binding="{Binding ModelName}"
-                            Header="圖片符號"
-                            IsReadOnly="True" />
-
-						<DataGridTextColumn
-                            Width="100"
-                            Binding="{Binding CreatedBy}"
-                            Header="創建人"
-                            IsReadOnly="True" />
-
-						<DataGridTextColumn
-                            Width="100"
-                            Binding="{Binding CreatedTimeDisplay}"
-                            Header="創建時間"
-                            IsReadOnly="True" />
-						<DataGridTextColumn
-                            Width="100"
-                            Binding="{Binding CreatedTimeDisplay}"
-                            Header="修改人"
-                            IsReadOnly="True" />
-						<DataGridTextColumn
-                            Width="170"
-                            Binding="{Binding CreatedTimeDisplay}"
-                            Header="修改時間"
-                            IsReadOnly="True" />
-
-					</DataGrid.Columns>
-				</DataGrid>
+                    Source="{Binding TreeSource}" />
 			</Grid>
 		</Border>
 	</et:PageContainer>
-
 </UserControl>

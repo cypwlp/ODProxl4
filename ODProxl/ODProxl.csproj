@@ -57,8 +57,8 @@
 			<DependentUpon>ModelClassDialog.axaml</DependentUpon>
 			<SubType>Code</SubType>
 		</Compile>
-		<Compile Update="Pages\ClassPage.axaml.cs">
-		  <DependentUpon>ClassPage.axaml</DependentUpon>
+		<Compile Update="Pages\RuleClassPage.axaml.cs">
+		  <DependentUpon>RuleClassPage.axaml</DependentUpon>
 		</Compile>
 	</ItemGroup>
 	<ItemGroup>

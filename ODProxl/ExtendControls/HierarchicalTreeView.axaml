@@ -4,72 +4,70 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:ODProxl.Utils.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ODProxl.ExtendControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
 
-    <!--  样式放在 Styles 集合中  -->
-    <UserControl.Styles>
-        <Style Selector="ToggleButton.ExpandToggle">
-            <Setter Property="Content" Value="▶" />
-            <Setter Property="FontFamily" Value="Segoe UI Symbol" />
-            <Setter Property="Width" Value="18" />
-            <Setter Property="Height" Value="18" />
-            <Setter Property="Margin" Value="0,2,6,0" />
-            <Setter Property="VerticalAlignment" Value="Top" />
-        </Style>
-        <Style Selector="ToggleButton.ExpandToggle:checked">
-            <Setter Property="Content" Value="▼" />
-        </Style>
-    </UserControl.Styles>
+	<UserControl.Styles>
+		<Style Selector="ToggleButton.ExpandToggle">
+			<Setter Property="Content" Value="▶" />
+			<Setter Property="FontFamily" Value="Segoe UI Symbol" />
+			<Setter Property="Width" Value="18" />
+			<Setter Property="Height" Value="18" />
+			<Setter Property="Margin" Value="0,2,6,0" />
+			<Setter Property="VerticalAlignment" Value="Top" />
+		</Style>
+		<Style Selector="ToggleButton.ExpandToggle:checked">
+			<Setter Property="Content" Value="▼" />
+		</Style>
+	</UserControl.Styles>
 
-    <!--  资源字典只放有键的资源（转换器、DataTemplate）  -->
-    <UserControl.Resources>
-        <converters:ObjectNotNullConverter x:Key="ObjectNotNullConverter" />
+	<UserControl.Resources>
+		<converters:ObjectNotNullConverter x:Key="ObjectNotNullConverter" />
 
-        <!--  递归节点模板  -->
-        <DataTemplate x:Key="RecursiveNodeTemplate">
-            <StackPanel Spacing="1">
-                <Grid ColumnDefinitions="Auto,*">
-                    <ToggleButton
+		<DataTemplate x:Key="RecursiveNodeTemplate">
+			<StackPanel Spacing="1">
+				<Grid ColumnDefinitions="Auto,*">
+					<ToggleButton
                         Grid.Column="0"
                         Classes="ExpandToggle"
                         IsChecked="{Binding IsExpanded, Mode=TwoWay}"
                         IsVisible="{Binding HasChildren}" />
-                    <ContentPresenter
+					<ContentPresenter
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         Content="{Binding}"
-                        ContentTemplate="{Binding #root.NodeTemplate}" />
-                </Grid>
+                        ContentTemplate="{Binding NodeTemplate, RelativeSource={RelativeSource FindAncestor, AncestorType=local:HierarchicalTreeView}}" />
+				</Grid>
 
-                <StackPanel Margin="20,0,0,0" IsVisible="{Binding IsExpanded}">
-                    <ContentPresenter
+				<StackPanel Margin="20,0,0,0" IsVisible="{Binding IsExpanded}">
+					<ContentPresenter
                         Margin="0,2"
                         Content="{Binding}"
-                        ContentTemplate="{Binding #root.GroupHeaderTemplate}"
-                        IsVisible="{Binding #root.GroupHeaderTemplate, Converter={StaticResource ObjectNotNullConverter}}" />
+                        ContentTemplate="{Binding GroupHeaderTemplate, RelativeSource={RelativeSource FindAncestor, AncestorType=local:HierarchicalTreeView}}"
+                        IsVisible="{Binding GroupHeaderTemplate, RelativeSource={RelativeSource FindAncestor, AncestorType=local:HierarchicalTreeView}, Converter={StaticResource ObjectNotNullConverter}}" />
 
-                    <ItemsControl ItemsSource="{Binding Children}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource RecursiveNodeTemplate}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </StackPanel>
-        </DataTemplate>
-    </UserControl.Resources>
+					<ItemsControl ItemsSource="{Binding Children}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource RecursiveNodeTemplate}" />
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</StackPanel>
+			</StackPanel>
+		</DataTemplate>
+	</UserControl.Resources>
 
-    <ScrollViewer HorizontalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding ItemsSource, ElementName=root}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource RecursiveNodeTemplate}" />
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+	<ScrollViewer HorizontalScrollBarVisibility="Auto">
+		<ItemsControl ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource FindAncestor, AncestorType=local:HierarchicalTreeView}}">
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource RecursiveNodeTemplate}" />
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+	</ScrollViewer>
 </UserControl>

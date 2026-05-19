@@ -21,6 +21,7 @@
     <ProjectReference Include="..\ODProxl.ClientDtos\ODProxl.ClientDtos.csproj" />
     <ProjectReference Include="..\ODProxl.ClientServices\ODProxl.ClientServices.csproj" />
     <ProjectReference Include="..\ODProxl.Global\ODProxl.Global.csproj" />
+    <ProjectReference Include="..\ODProxl.TreeNodes\ODProxl.TreeNodes.csproj" />
     <ProjectReference Include="..\ODProxl.Utils\ODProxl.Utils.csproj" />
   </ItemGroup>
 </Project>

@@ -196,6 +196,12 @@ namespace ODProxl.ViewModels.Pages
                     {
                         new LeftMenuItem{
                             Icon=MaterialIconKind.Group,
+                            Title="類別管理",
+                            ViewName="RuleClassPage",
+                            LimitUserName=new ObservableCollection<string>{"AllUser"}
+                        },
+                        new LeftMenuItem{
+                            Icon=MaterialIconKind.Group,
                             Title="群組管理",
                             ViewName="ProductGroupPage",
                             LimitUserName=new ObservableCollection<string>{"AllUser"}

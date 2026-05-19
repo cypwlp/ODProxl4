@@ -41,6 +41,7 @@ namespace ODProxl
             containerRegistry.RegisterForNavigation<ProductPage, ProductPageViewModel>();
             containerRegistry.RegisterForNavigation<ProductGroupPage, ProductGroupPageViewModel>();
             containerRegistry.RegisterForNavigation<UserConfigPage, UserConfigPageViewModel>();
+            containerRegistry.RegisterForNavigation<RuleClassPage, RuleClassPageViewModel>();
             containerRegistry.RegisterDialog<AddOrEditProductDialog, AddOrEditProductDialogViewModel>();
             containerRegistry.RegisterDialog<RevisedRulesDialog, RevisedRulesDialogViewModel>();
             containerRegistry.RegisterDialog<RevisionDetailsDialog, RevisionDetailsDialogViewModel>();

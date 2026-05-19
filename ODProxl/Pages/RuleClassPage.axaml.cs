@@ -2,9 +2,9 @@
 
 namespace ODProxl.Pages;
 
-public partial class ClassPage : UserControl
+public partial class RuleClassPage : UserControl
 {
-    public ClassPage()
+    public RuleClassPage()
     {
         InitializeComponent();
     }
