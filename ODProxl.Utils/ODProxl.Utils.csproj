@@ -25,9 +25,6 @@
 		<PackageReference Include="Newtonsoft.Json" />
 	</ItemGroup>
 	<ItemGroup>
-		<Folder Include="TreeNode\" />
-	</ItemGroup>
-	<ItemGroup>
 		<ProjectReference Include="..\ODProxl.ClientDtos\ODProxl.ClientDtos.csproj" />
 		<ProjectReference Include="..\ODProxl.ClientServices\ODProxl.ClientServices.csproj" />
 	</ItemGroup>

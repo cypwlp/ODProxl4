@@ -119,7 +119,7 @@ namespace ODProxl.ViewModels.Pages
         public AsyncDelegateCommand AutoAnnotateCommand { get; }
         public DelegateCommand AddNewClassCommand { get; }
 
-        public DelegateCommand OpenFileCommand { get; }
+        public DelegateCommand OpenFileCommand { get; set; }
         #endregion
 
         #region 建構子

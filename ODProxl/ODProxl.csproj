@@ -28,7 +28,7 @@
 		<PackageReference Include="DialogHost.Avalonia" />
 		<PackageReference Include="Material.Avalonia.DataGrid" />
 		<PackageReference Include="Docnet.Core" />
-		<PackageReference Include="Live.Avalonia"/>
+		<PackageReference Include="Live.Avalonia" />
 	</ItemGroup>
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
@@ -56,6 +56,9 @@
 		<Compile Update="Dialogs\ModelClassDialog.axaml.cs">
 			<DependentUpon>ModelClassDialog.axaml</DependentUpon>
 			<SubType>Code</SubType>
+		</Compile>
+		<Compile Update="Pages\ClassPage.axaml.cs">
+		  <DependentUpon>ClassPage.axaml</DependentUpon>
 		</Compile>
 	</ItemGroup>
 	<ItemGroup>
