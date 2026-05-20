@@ -57,20 +57,17 @@
 						</TextBox.InnerRightContent>
 					</TextBox>
 					<et:IconActionButton
-                        Command="{Binding EditSelectedCommand}"
+                        Command="{Binding AddNewRuleClassCommand}"
                         IconKind="EditCircle"
                         Text="新增類別" />
 					<et:IconActionButton
-                        Command="{Binding EditSelectedCommand}"
+                        Command="{Binding EditRuleClassCommand}"
                         IconKind="EditCircle"
                         Text="編輯類別" />
-					<et:IconActionButton
-                        Command="{Binding EditSelectedCommand}"
-                        IconKind="EditCircle"
-                        Text="覆蓋圖標符號" />
 				</StackPanel>
 
 				<tdg:TreeDataGrid
+                    Name="RuleClassTreeGrid"
                     Grid.Row="1"
                     Margin="12,0,12,16"
                     Source="{Binding TreeSource}" />

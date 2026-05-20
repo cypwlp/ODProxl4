@@ -23,6 +23,7 @@
 		<PackageReference Include="Material.Icons.Avalonia" />
 		<PackageReference Include="RestSharp" />
 		<PackageReference Include="Newtonsoft.Json" />
+
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\ODProxl.ClientDtos\ODProxl.ClientDtos.csproj" />

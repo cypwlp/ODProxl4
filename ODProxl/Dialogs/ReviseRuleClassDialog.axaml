@@ -1,0 +1,93 @@
+﻿<UserControl
+    x:Class="ODProxl.Dialogs.ReviseRuleClassDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:icons="clr-namespace:Material.Icons;assembly=Material.Icons"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:ODProxl.ViewModels.Dialogs;assembly=ODProxl.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="600"
+    x:DataType="vm:ReviseRuleClassDialogViewModel"
+    mc:Ignorable="d">
+	<Border
+        Padding="40,32"
+        Background="{DynamicResource MaterialSurfaceColor}"
+        BoxShadow="0 12 40 0 #33000000"
+        CornerRadius="28">
+		<StackPanel Spacing="28">
+			<TextBox
+                MinHeight="52"
+                Padding="16,14"
+                Classes="Filled"
+                CornerRadius="16"
+                FontSize="16"
+                MaxLines="1"
+                Text="{Binding RuleClassName, Mode=TwoWay}"
+                Watermark="類別名稱" />
+			<TextBox
+                MinHeight="52"
+                Padding="16,14"
+                Classes="Filled"
+                CornerRadius="16"
+                FontSize="16"
+                MaxLines="1"
+                Text="{Binding RuleClassKey, Mode=TwoWay}"
+                Watermark="類別鍵名" />
+			<Button
+                Width="170"
+                Height="170"
+                Padding="0"
+                HorizontalAlignment="Left"
+                Background="{DynamicResource MaterialPaperColor}"
+                BorderBrush="{DynamicResource MaterialDividerBrush}"
+                BorderThickness="2"
+                Classes="flat"
+                Click="OnSelectFileClick"
+                CornerRadius="16">
+				<Panel>
+					<Image
+                        IsVisible="{Binding HasFile}"
+                        Source="{Binding FileUrl}"
+                        Stretch="UniformToFill" />
+					<StackPanel
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding NotHasFile}"
+                        Opacity="0.4">
+						<avalonia:MaterialIcon
+                            Width="48"
+                            Height="48"
+                            Foreground="{DynamicResource MaterialSecondaryForegroundBrush}"
+                            Kind="Add" />
+						<TextBlock
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="12"
+                            Foreground="{DynamicResource MaterialSecondaryForegroundBrush}"
+                            Text="上傳圖片" />
+					</StackPanel>
+				</Panel>
+			</Button>
+			<StackPanel
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="12">
+				<Button
+                    MinWidth="110"
+                    Classes="Outlined"
+                    Command="{Binding CancelCommand}">
+					取消
+				</Button>
+				<Button
+                    MinWidth="110"
+                    Background="{DynamicResource MaterialPrimaryColor}"
+                    Command="{Binding ConfirmCommand}"
+                    Foreground="{DynamicResource MaterialOnPrimaryColor}">
+					確認
+				</Button>
+			</StackPanel>
+		</StackPanel>
+	</Border>
+</UserControl>

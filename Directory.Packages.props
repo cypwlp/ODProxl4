@@ -26,6 +26,7 @@
     <!-- DialogHost -->
     <PackageVersion Include="DialogHost.Avalonia" Version="0.10.4" />
     <!-- 其他 -->
+    <PackageVersion Include="WebDAVClient" Version="2.7.0"/>
     <PackageVersion Include="Velopack" Version="0.0.1298" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageVersion Include="System.ServiceModel.Http" Version="8.0.0" />
