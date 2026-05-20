@@ -4,7 +4,11 @@ using ODProxl.ClientDtos;
 using ODProxl.TreeNodes;
 using ODProxl.Utils.HttpService;
 using RestSharp;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ODProxl.ViewModels.Pages
 {
@@ -34,6 +38,7 @@ namespace ODProxl.ViewModels.Pages
         public DelegateCommand SearchCommand { get; }
         public DelegateCommand AddNewRuleClassCommand { get; }
         public DelegateCommand EditRuleClassCommand { get; }
+        public Action? OnTreeSourceReady { get; set; }
 
         public RuleClassPageViewModel(IHttpRestClient httpRestClient, IDialogService dialogService, IEventAggregator eventAggregator)
         {
@@ -42,7 +47,6 @@ namespace ODProxl.ViewModels.Pages
             _eventAggregator = eventAggregator;
 
             SearchCommand = new DelegateCommand(OnSearch);
-            // 修改1：传入当前选中节点作为父节点
             AddNewRuleClassCommand = new DelegateCommand(async () => await ShowRuleClassDialogAsync(null, SelectedRuleClass));
             EditRuleClassCommand = new DelegateCommand(async () => await ShowRuleClassDialogAsync(SelectedRuleClass));
         }
@@ -154,20 +158,18 @@ namespace ODProxl.ViewModels.Pages
             };
 
             TreeSource.RowSelection!.SingleSelect = true;
+            OnTreeSourceReady?.Invoke();
         }
 
         private void OnSearch()
         {
-            // 实现搜索逻辑
         }
 
-        // 修改2：增加 parentNode 参数
         private async Task ShowRuleClassDialogAsync(RuleClassTreeNode? ruleClass, RuleClassTreeNode? parentNode = null)
         {
             IDialogResult result;
             if (ruleClass == null)
             {
-                // 新增时，标题可以加上父节点提示
                 string title = parentNode == null ? "新增規則類別" : $"新增子類別（父：{parentNode.RuleClassName}）";
                 result = await _dialogService.ShowDialogAsync("ReviseRuleClassDialog", new DialogParameters { { "Title", title } });
             }
@@ -197,7 +199,7 @@ namespace ODProxl.ViewModels.Pages
                     RuleClassName = ruleClassName,
                     RuleClassKey = ruleClassKey,
                     FileId = ruleClassFileId,
-                    ParentRuleClassId = parentNode?.RuleClassId ?? 0  // 修改3：设置父ID
+                    ParentRuleClassId = parentNode?.RuleClassId ?? 0
                 };
                 var createRequest = new ClientRequest { Url = "RuleClass", Method = Method.Post, Parameters = createDto };
                 await _httpRestClient.ExecuteAsync<RuleClassDto>(createRequest);

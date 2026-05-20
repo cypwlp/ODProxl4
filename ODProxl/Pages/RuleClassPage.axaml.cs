@@ -1,8 +1,8 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Selection;
-using Avalonia.Interactivity;
 using ODProxl.TreeNodes;
 using ODProxl.ViewModels.Pages;
+using System;
 
 namespace ODProxl.Pages
 {
@@ -11,18 +11,24 @@ namespace ODProxl.Pages
         public RuleClassPage()
         {
             InitializeComponent();
-            Loaded += OnLoaded;
+            DataContextChanged += OnDataContextChanged;
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private void OnDataContextChanged(object? sender, EventArgs e)
         {
-            if (RuleClassTreeGrid.RowSelection != null)
+            if (DataContext is RuleClassPageViewModel vm)
             {
-                RuleClassTreeGrid.RowSelection.SelectionChanged += OnTreeGridSelectionChanged;
+                vm.OnTreeSourceReady = () =>
+                {
+                    if (RuleClassTreeGrid.RowSelection != null)
+                    {
+                        RuleClassTreeGrid.RowSelection.SelectionChanged += OnTreeGridSelectionChanged;
+                    }
+                };
             }
         }
 
-        private void OnTreeGridSelectionChanged(object sender, TreeSelectionModelSelectionChangedEventArgs e)
+        private void OnTreeGridSelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs e)
         {
             if (DataContext is RuleClassPageViewModel vm)
             {

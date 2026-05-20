@@ -26,8 +26,8 @@ namespace ODProxl
             containerRegistry.RegisterSingleton<HttpClient>();
             containerRegistry.RegisterSingleton<IHttpRestClient>(sp => new HttpRestClient(
                 new RestClient(),
-                //"http://interior.topmix.net/Info/System/SoftWare/ODApi/api/",
-                "https://localhost:44364/api/",
+                "http://interior.topmix.net/Info/System/SoftWare/ODApi/api/",
+               // "https://localhost:44364/api/",
                 sp.Resolve<IAuthService>()
             ));
 
