@@ -36,10 +36,11 @@ namespace ODProxl.Dialogs
             var files = await topLevel.StorageProvider.OpenFilePickerAsync(options);
             if (files.Count >= 1)
             {
-                var filePath = files[0].Path.AbsolutePath;
+                var uri = files[0].Path;
+                string localPath = uri.LocalPath;
                 if (DataContext is ReviseRuleClassDialogViewModel vm)
                 {
-                    await vm.UploadFileAsync(filePath);
+                    await vm.UploadFileAsync(localPath);
                 }
             }
         }

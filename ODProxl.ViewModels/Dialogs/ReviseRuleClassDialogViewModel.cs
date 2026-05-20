@@ -1,4 +1,6 @@
-﻿using ODProxl.ClientDtos;
+﻿using Avalonia.Media.Imaging;
+using Avalonia.Threading;
+using ODProxl.ClientDtos;
 using ODProxl.Global.Services;
 using ODProxl.Utils.HttpService;
 using RestSharp;
@@ -20,6 +22,8 @@ namespace ODProxl.ViewModels.Dialogs
         private string symbol_icon_url;
         private int _fileId;
         private readonly HttpClient _httpClient;
+        private Bitmap? _fileImage;
+        private CancellationTokenSource? _imageLoadCts;
 
         public string? Title { get; set; }
         public DialogCloseListener RequestClose { get; set; }
@@ -47,13 +51,24 @@ namespace ODProxl.ViewModels.Dialogs
             get => _fileUrl;
             set
             {
-                SetProperty(ref _fileUrl, value);
-                RaisePropertyChanged(nameof(HasFile));
-                RaisePropertyChanged(nameof(NotHasFile));
+                if (SetProperty(ref _fileUrl, value))
+                {
+                    // 修改1：HasFile/NotHasFile 现在基于 FileUrl 是否为空
+                    RaisePropertyChanged(nameof(HasFile));
+                    RaisePropertyChanged(nameof(NotHasFile));
+                    _ = LoadFileImageAsync();       // 自动加载图片，加载成功或失败会自动更新 FileImage
+                }
             }
         }
 
-        public bool HasFile => !string.IsNullOrEmpty(FileUrl);
+        public Bitmap? FileImage
+        {
+            get => _fileImage;
+            set => SetProperty(ref _fileImage, value);
+        }
+
+        // 修改2：基于 FileUrl 判断是否有文件，避免短暂闪烁
+        public bool HasFile => !string.IsNullOrWhiteSpace(FileUrl);
         public bool NotHasFile => !HasFile;
 
         public bool IsUploading
@@ -162,11 +177,46 @@ namespace ODProxl.ViewModels.Dialogs
             }
         }
 
+        private async Task LoadFileImageAsync()
+        {
+            // 取消之前的加载
+            _imageLoadCts?.Cancel();
+            _imageLoadCts = new CancellationTokenSource();
+            var token = _imageLoadCts.Token;
+
+            if (string.IsNullOrEmpty(FileUrl))
+            {
+                await Dispatcher.UIThread.InvokeAsync(() => FileImage = null);
+                return;
+            }
+
+            try
+            {
+                var bytes = await _httpClient.GetByteArrayAsync(FileUrl, token);
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    using var stream = new System.IO.MemoryStream(bytes);
+                    FileImage = new Bitmap(stream);
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                // 被取消，忽略
+            }
+            catch
+            {
+                await Dispatcher.UIThread.InvokeAsync(() => FileImage = null);
+            }
+        }
+
         public bool CanCloseDialog() => true;
         public void OnDialogClosed() { }
 
         public void OnDialogOpened(IDialogParameters parameters)
         {
+            // 修改3：添加日志排查（上线前可删除）
+            System.Diagnostics.Debug.WriteLine($"OnDialogOpened - Title: {parameters.GetValue<string>("Title")}, RuleClassName: {parameters.GetValue<string>("RuleClassName")}");
+
             Title = parameters.GetValue<string>("Title");
             if (parameters.ContainsKey("RuleClassName"))
                 RuleClassName = parameters.GetValue<string>("RuleClassName");

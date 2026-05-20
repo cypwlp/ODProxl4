@@ -42,7 +42,8 @@ namespace ODProxl.ViewModels.Pages
             _eventAggregator = eventAggregator;
 
             SearchCommand = new DelegateCommand(OnSearch);
-            AddNewRuleClassCommand = new DelegateCommand(async () => await ShowRuleClassDialogAsync(null));
+            // 修改1：传入当前选中节点作为父节点
+            AddNewRuleClassCommand = new DelegateCommand(async () => await ShowRuleClassDialogAsync(null, SelectedRuleClass));
             EditRuleClassCommand = new DelegateCommand(async () => await ShowRuleClassDialogAsync(SelectedRuleClass));
         }
 
@@ -157,14 +158,18 @@ namespace ODProxl.ViewModels.Pages
 
         private void OnSearch()
         {
+            // 实现搜索逻辑
         }
 
-        private async Task ShowRuleClassDialogAsync(RuleClassTreeNode? ruleClass)
+        // 修改2：增加 parentNode 参数
+        private async Task ShowRuleClassDialogAsync(RuleClassTreeNode? ruleClass, RuleClassTreeNode? parentNode = null)
         {
             IDialogResult result;
             if (ruleClass == null)
             {
-                result = await _dialogService.ShowDialogAsync("ReviseRuleClassDialog", new DialogParameters { { "Title", "新增規則類別" } });
+                // 新增时，标题可以加上父节点提示
+                string title = parentNode == null ? "新增規則類別" : $"新增子類別（父：{parentNode.RuleClassName}）";
+                result = await _dialogService.ShowDialogAsync("ReviseRuleClassDialog", new DialogParameters { { "Title", title } });
             }
             else
             {
@@ -191,7 +196,8 @@ namespace ODProxl.ViewModels.Pages
                 {
                     RuleClassName = ruleClassName,
                     RuleClassKey = ruleClassKey,
-                    FileId = ruleClassFileId
+                    FileId = ruleClassFileId,
+                    ParentRuleClassId = parentNode?.RuleClassId ?? 0  // 修改3：设置父ID
                 };
                 var createRequest = new ClientRequest { Url = "RuleClass", Method = Method.Post, Parameters = createDto };
                 await _httpRestClient.ExecuteAsync<RuleClassDto>(createRequest);

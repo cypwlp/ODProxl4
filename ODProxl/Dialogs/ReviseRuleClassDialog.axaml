@@ -49,7 +49,7 @@
 				<Panel>
 					<Image
                         IsVisible="{Binding HasFile}"
-                        Source="{Binding FileUrl}"
+                        Source="{Binding FileImage}"
                         Stretch="UniformToFill" />
 					<StackPanel
                         HorizontalAlignment="Center"
