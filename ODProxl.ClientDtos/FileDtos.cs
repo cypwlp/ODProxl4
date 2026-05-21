@@ -14,6 +14,11 @@
         public DateTime UpdatedTime { get; set; }
     }
 
+    public record FileNameUrlDto
+    {
+        public string FileName { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+    }
     public record CreateFileDto
     {
         public int? ParentFileId { get; set; }

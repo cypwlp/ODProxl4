@@ -7,6 +7,8 @@
     xmlns:icons="clr-namespace:Material.Icons;assembly=Material.Icons"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:ODProxl.ViewModels.Dialogs;assembly=ODProxl.ViewModels"
+    Width="600"
+    Height="450"
     d:DesignHeight="450"
     d:DesignWidth="600"
     x:DataType="vm:ReviseRuleClassDialogViewModel"
@@ -35,26 +37,67 @@
                 MaxLines="1"
                 Text="{Binding RuleClassKey, Mode=TwoWay}"
                 Watermark="類別鍵名" />
-			<Button
+
+			<Panel
                 Width="170"
                 Height="170"
-                Padding="0"
-                HorizontalAlignment="Left"
-                Background="{DynamicResource MaterialPaperColor}"
-                BorderBrush="{DynamicResource MaterialDividerBrush}"
-                BorderThickness="2"
-                Classes="flat"
-                Click="OnSelectFileClick"
-                CornerRadius="16">
-				<Panel>
-					<Image
-                        IsVisible="{Binding HasFile}"
-                        Source="{Binding FileImage}"
-                        Stretch="UniformToFill" />
+                HorizontalAlignment="Left">
+
+				<!--  有圖片時：顯示圖片 + 右上角換圖按鈕  -->
+				<Border
+                    Background="{DynamicResource MaterialPaperColor}"
+                    BorderBrush="{DynamicResource MaterialDividerBrush}"
+                    BorderThickness="2"
+                    ClipToBounds="True"
+                    CornerRadius="16"
+                    IsVisible="{Binding HasFile}">
+					<Panel>
+						<Image
+                            Name="PreviewImage"
+                            Cursor="Hand"
+                            DoubleTapped="OnImageDoubleTapped"
+                            Source="{Binding FileImage}"
+                            Stretch="UniformToFill"
+                            ToolTip.Tip="雙擊放大" />
+
+						<!--  換圖按鈕  -->
+						<Button
+                            Width="32"
+                            Height="32"
+                            Margin="0,8,8,0"
+                            Padding="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Background="#80000000"
+                            BorderThickness="0"
+                            Classes="flat"
+                            Click="OnSelectFileClick"
+                            CornerRadius="16"
+                            ToolTip.Tip="更換圖片">
+							<avalonia:MaterialIcon
+                                Width="18"
+                                Height="18"
+                                Foreground="White"
+                                Kind="Pencil" />
+						</Button>
+					</Panel>
+				</Border>
+
+				<!--  沒圖片時：顯示上傳按鈕  -->
+				<Button
+                    Padding="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Background="{DynamicResource MaterialPaperColor}"
+                    BorderBrush="{DynamicResource MaterialDividerBrush}"
+                    BorderThickness="2"
+                    Classes="flat"
+                    Click="OnSelectFileClick"
+                    CornerRadius="16"
+                    IsVisible="{Binding NotHasFile}">
 					<StackPanel
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        IsVisible="{Binding NotHasFile}"
                         Opacity="0.4">
 						<avalonia:MaterialIcon
                             Width="48"
@@ -68,8 +111,9 @@
                             Foreground="{DynamicResource MaterialSecondaryForegroundBrush}"
                             Text="上傳圖片" />
 					</StackPanel>
-				</Panel>
-			</Button>
+				</Button>
+			</Panel>
+
 			<StackPanel
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"

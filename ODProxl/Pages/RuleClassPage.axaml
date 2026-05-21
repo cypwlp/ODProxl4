@@ -57,12 +57,18 @@
 						</TextBox.InnerRightContent>
 					</TextBox>
 					<et:IconActionButton
-                        Command="{Binding AddNewRuleClassCommand}"
+                        Command="{Binding AddTopLevelRuleClassCommand}"
                         IconKind="EditCircle"
-                        Text="新增類別" />
+                        Text="新增主類別" />
+					<et:IconActionButton
+                        Command="{Binding AddSubRuleClassCommand}"
+                        IconKind="EditCircle"
+                        IsEnabled="{Binding HasSelectedRuleClass}"
+                        Text="新增子類別" />
 					<et:IconActionButton
                         Command="{Binding EditRuleClassCommand}"
                         IconKind="EditCircle"
+                        IsEnabled="{Binding HasSelectedRuleClass}"
                         Text="編輯類別" />
 				</StackPanel>
 

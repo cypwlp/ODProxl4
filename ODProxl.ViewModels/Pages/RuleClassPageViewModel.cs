@@ -4,11 +4,7 @@ using ODProxl.ClientDtos;
 using ODProxl.TreeNodes;
 using ODProxl.Utils.HttpService;
 using RestSharp;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ODProxl.ViewModels.Pages
 {
@@ -32,11 +28,19 @@ namespace ODProxl.ViewModels.Pages
         public RuleClassTreeNode? SelectedRuleClass
         {
             get => _selectedRuleClass;
-            set => SetProperty(ref _selectedRuleClass, value);
+            set
+            {
+                if (SetProperty(ref _selectedRuleClass, value))
+                {
+                    RaisePropertyChanged(nameof(HasSelectedRuleClass));
+                }
+            }
         }
-
+        public bool HasSelectedRuleClass => SelectedRuleClass != null;
         public DelegateCommand SearchCommand { get; }
-        public DelegateCommand AddNewRuleClassCommand { get; }
+        public DelegateCommand AddSubRuleClassCommand { get; }
+
+        public DelegateCommand AddTopLevelRuleClassCommand { get; set; }
         public DelegateCommand EditRuleClassCommand { get; }
         public Action? OnTreeSourceReady { get; set; }
 
@@ -47,7 +51,8 @@ namespace ODProxl.ViewModels.Pages
             _eventAggregator = eventAggregator;
 
             SearchCommand = new DelegateCommand(OnSearch);
-            AddNewRuleClassCommand = new DelegateCommand(async () => await ShowRuleClassDialogAsync(null, SelectedRuleClass));
+            AddTopLevelRuleClassCommand = new DelegateCommand(async () => await ShowRuleClassDialogAsync(null, null));
+            AddSubRuleClassCommand = new DelegateCommand(async () => await ShowRuleClassDialogAsync(null, SelectedRuleClass));
             EditRuleClassCommand = new DelegateCommand(async () => await ShowRuleClassDialogAsync(SelectedRuleClass));
         }
 
@@ -85,13 +90,12 @@ namespace ODProxl.ViewModels.Pages
             {
                 var idsParam = string.Join(",", fileIds);
                 var fileRequest = new ClientRequest { Url = $"File/name-urls?ids={idsParam}", Method = Method.Get };
-                var fileResponse = await _httpRestClient.ExecuteAsync<ClientResponse<Dictionary<int, object>>>(fileRequest);
-                if (fileResponse.IsSuccess && fileResponse.Data?.Data != null)
+                var fileResponse = await _httpRestClient.ExecuteAsync<Dictionary<int, FileNameUrlDto>>(fileRequest);
+                if (fileResponse.IsSuccess && fileResponse.Data != null)
                 {
-                    foreach (var kvp in fileResponse.Data.Data)
+                    foreach (var kvp in fileResponse.Data)
                     {
-                        if (kvp.Value is IDictionary<string, object> fileInfo && fileInfo.ContainsKey("url"))
-                            fileUrlDict[kvp.Key] = fileInfo["url"]?.ToString() ?? string.Empty;
+                        fileUrlDict[kvp.Key] = kvp.Value.Url;
                     }
                 }
             }
@@ -147,6 +151,7 @@ namespace ODProxl.ViewModels.Pages
                     new HierarchicalExpanderColumn<RuleClassTreeNode>(
                         new TextColumn<RuleClassTreeNode, int>("類別ID", x => x.RuleClassId, width: new GridLength(80)),
                         x => x.Children),
+                    new TextColumn<RuleClassTreeNode, int>("文件ID", x => x.FileId, width: new GridLength(120)),
                     new TextColumn<RuleClassTreeNode, string>("類別鍵值", x => x.RuleClassKey, width: new GridLength(120)),
                     new TextColumn<RuleClassTreeNode, string>("類別名稱", x => x.RuleClassName, width: new GridLength(1, GridUnitType.Star)),
                     new TextColumn<RuleClassTreeNode, string>("參考圖片", x => x.FileUrl, width: new GridLength(200)),

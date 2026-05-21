@@ -25,7 +25,12 @@ namespace ODProxl.ViewModels.Dialogs
         private Bitmap? _fileImage;
         private CancellationTokenSource? _imageLoadCts;
 
-        public string? Title { get; set; }
+        private string? _title;
+        public string? Title
+        {
+            get => _title;
+            set => SetProperty(ref _title, value);
+        }
         public DialogCloseListener RequestClose { get; set; }
 
         public string RuleClassKey
@@ -53,10 +58,9 @@ namespace ODProxl.ViewModels.Dialogs
             {
                 if (SetProperty(ref _fileUrl, value))
                 {
-                    // 修改1：HasFile/NotHasFile 现在基于 FileUrl 是否为空
                     RaisePropertyChanged(nameof(HasFile));
                     RaisePropertyChanged(nameof(NotHasFile));
-                    _ = LoadFileImageAsync();       // 自动加载图片，加载成功或失败会自动更新 FileImage
+                    _ = LoadFileImageAsync();
                 }
             }
         }
@@ -67,7 +71,6 @@ namespace ODProxl.ViewModels.Dialogs
             set => SetProperty(ref _fileImage, value);
         }
 
-        // 修改2：基于 FileUrl 判断是否有文件，避免短暂闪烁
         public bool HasFile => !string.IsNullOrWhiteSpace(FileUrl);
         public bool NotHasFile => !HasFile;
 
@@ -176,23 +179,20 @@ namespace ODProxl.ViewModels.Dialogs
                 FileId = response.Data.FileId;
             }
         }
-
         private async Task LoadFileImageAsync()
         {
-            // 取消之前的加载
             _imageLoadCts?.Cancel();
             _imageLoadCts = new CancellationTokenSource();
             var token = _imageLoadCts.Token;
-
             if (string.IsNullOrEmpty(FileUrl))
             {
                 await Dispatcher.UIThread.InvokeAsync(() => FileImage = null);
                 return;
             }
-
             try
             {
-                var bytes = await _httpClient.GetByteArrayAsync(FileUrl, token);
+                var uri = new Uri(FileUrl);
+                var bytes = await _httpClient.GetByteArrayAsync(uri, token);
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     using var stream = new System.IO.MemoryStream(bytes);
@@ -201,10 +201,10 @@ namespace ODProxl.ViewModels.Dialogs
             }
             catch (OperationCanceledException)
             {
-                // 被取消，忽略
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"图片加载失败: {ex.Message}");
                 await Dispatcher.UIThread.InvokeAsync(() => FileImage = null);
             }
         }
@@ -214,9 +214,6 @@ namespace ODProxl.ViewModels.Dialogs
 
         public void OnDialogOpened(IDialogParameters parameters)
         {
-            // 修改3：添加日志排查（上线前可删除）
-            System.Diagnostics.Debug.WriteLine($"OnDialogOpened - Title: {parameters.GetValue<string>("Title")}, RuleClassName: {parameters.GetValue<string>("RuleClassName")}");
-
             Title = parameters.GetValue<string>("Title");
             if (parameters.ContainsKey("RuleClassName"))
                 RuleClassName = parameters.GetValue<string>("RuleClassName");
