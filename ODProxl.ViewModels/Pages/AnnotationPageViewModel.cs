@@ -8,8 +8,11 @@ using Avalonia.Threading;
 using Docnet.Core;
 using Docnet.Core.Models;
 using Microsoft.ML.OnnxRuntime;
+using ODProxl.ClientDtos;
 using ODProxl.ClientServices.Impls;
+using ODProxl.Global.Services;
 using ODProxl.Utils.HttpService;
+using RestSharp;
 using SkiaSharp;
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
@@ -23,7 +26,8 @@ namespace ODProxl.ViewModels.Pages
         private readonly IDialogService _dialogService;
         private readonly HttpClient _httpClient;
         private readonly IHttpRestClient _httpRestClient;
-        private readonly Global.Services.IConfigManager _configManager;
+        private readonly IConfigManager _configManager;
+        private readonly IEventAggregator _eventAggregator;
         private string _imagesBaseUrl;
         private string _labelsBaseUrl;
         #endregion
@@ -98,6 +102,13 @@ namespace ODProxl.ViewModels.Pages
         public string ModeText => IsPolygonMode ? "多邊形模式" : "矩形模式";
 
         public ObservableCollection<string> ExpectedImagePaths { get; } = new();
+
+        private ObservableCollection<TinyRuleClassDto> _ruleCLass;
+        public ObservableCollection<TinyRuleClassDto> RuleClass
+        {
+            get => _ruleCLass;
+            set => SetProperty(ref _ruleCLass, value);
+        }
         #endregion
 
         #region 集合與選取項目
@@ -123,12 +134,13 @@ namespace ODProxl.ViewModels.Pages
         #endregion
 
         #region 建構子
-        public AnnotationPageViewModel(IDialogService dialogService, IHttpRestClient httpRestClient, HttpClient httpClient, Global.Services.IConfigManager configManager)
+        public AnnotationPageViewModel(IDialogService dialogService, IHttpRestClient httpRestClient, HttpClient httpClient, IConfigManager configManager, IEventAggregator eventAggregator)
         {
             _dialogService = dialogService;
             _httpClient = httpClient;
             _httpRestClient = httpRestClient;
             _configManager = configManager;
+            _eventAggregator = eventAggregator;
             _configManager.ConfigChanged += () =>
             {
                 _imagesBaseUrl = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
@@ -160,6 +172,24 @@ namespace ODProxl.ViewModels.Pages
             });
             AutoAnnotateCommand = new AsyncDelegateCommand(RunAutoAnnotationAsync);
             AddNewClassCommand = new DelegateCommand(async () => await AddNewClassAsync());
+        }
+        #endregion
+
+        #region 初始化類別列表
+        private async Task InitializeRuleClassAsync()
+        {
+            var request = new ClientRequest
+            {
+                Url = "RuleClass/none-parent-class",
+                Method = Method.Get,
+                ContentType = "application/json"
+            };
+            var response = await _httpRestClient.ExecuteAsync<List<TinyRuleClassDto>>(request);
+            if (response.IsSuccess && response.Data != null)
+            {
+                RuleClass = new ObservableCollection<TinyRuleClassDto>(response.Data);
+            }
+
         }
         #endregion
 
@@ -630,6 +660,11 @@ namespace ODProxl.ViewModels.Pages
             var result = await _dialogService.ShowDialogAsync("InputDialog", parameters);
             return result.Result == ButtonResult.OK ? result.Parameters.GetValue<string>("Result") ?? "" : "";
         }
+
+        public void ToRuleClassPage()
+        {
+
+        }
         #endregion
 
         #region AI 自動標註
@@ -697,7 +732,10 @@ namespace ODProxl.ViewModels.Pages
         #region INavigationAware 實作
         public bool IsNavigationTarget(NavigationContext navigationContext) => true;
         public void OnNavigatedFrom(NavigationContext navigationContext) { }
-        public void OnNavigatedTo(NavigationContext navigationContext) { }
+        public async void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            await InitializeRuleClassAsync();
+        }
         #endregion
 
         #region IDisposable

@@ -24,6 +24,12 @@
         public int FileId { get; set; }
     }
 
+    public record TinyRuleClassDto
+    {
+        public int RuleClassId { get; set; }
+        public string? RuleClassKey { get; set; }
+        public string? RuleClassName { get; set; }
+    }
     public record UpdateRuleClassDto
     {
         public string? RuleClassKey { get; set; }

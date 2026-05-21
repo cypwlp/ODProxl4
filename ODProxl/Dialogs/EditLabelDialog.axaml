@@ -1,0 +1,67 @@
+<UserControl
+    x:Class="ODProxl.EditLabelDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="280"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+	<UserControl.Styles>
+		<Style Selector="UserControl">
+			<Setter Property="Background" Value="{DynamicResource MaterialSurfaceColor}" />
+		</Style>
+	</UserControl.Styles>
+	<Grid Margin="20" RowDefinitions="Auto,*,Auto">
+		<!--  标题区  -->
+		<TextBlock
+            Grid.Row="0"
+            Margin="0,0,0,16"
+            FontSize="20"
+            FontWeight="Bold"
+            Text="編輯標註" />
+
+		<!--  内容区  -->
+		<StackPanel Grid.Row="1" Spacing="16">
+			<!--  类别选择：展示当前标注所属类别，并允许切换  -->
+			<StackPanel Spacing="6">
+				<TextBlock FontWeight="SemiBold" Text="類別" />
+				<ComboBox HorizontalAlignment="Stretch" SelectedIndex="1">
+					<ComboBoxItem>矩形類別</ComboBoxItem>
+					<ComboBoxItem IsSelected="True">多邊形類別</ComboBoxItem>
+					<ComboBoxItem>文字類別</ComboBoxItem>
+				</ComboBox>
+			</StackPanel>
+
+			<!--  标签文字：当前标注的文本内容  -->
+			<StackPanel Spacing="6">
+				<TextBlock FontWeight="SemiBold" Text="標籤文字" />
+				<TextBox
+                    AcceptsReturn="False"
+                    Text="範例車輛標籤"
+                    Watermark="請輸入標籤" />
+			</StackPanel>
+		</StackPanel>
+
+		<!--  按钮区  -->
+		<StackPanel
+            Grid.Row="2"
+            Margin="0,20,0,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="12">
+			<Button
+                Width="80"
+                Height="32"
+                Classes="Outlined">
+				取消
+			</Button>
+			<Button
+                Width="80"
+                Height="32"
+                Classes="Primary">
+				儲存
+			</Button>
+		</StackPanel>
+	</Grid>
+</UserControl>
