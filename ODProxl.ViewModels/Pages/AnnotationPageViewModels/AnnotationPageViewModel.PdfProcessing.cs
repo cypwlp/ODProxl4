@@ -145,43 +145,106 @@ namespace ODProxl.ViewModels.Pages.AnnotationPageViewModels
             }
         }
 
+        //private async Task<string> UploadPdfAsync(string localPdfPath)
+        //{
+        //    return await _fileManager.UploadSingleFileAsync(
+        //        localPdfPath,
+        //        source_pdf_base_url,
+        //        "annotation/pdfs",
+        //        credentials_l,
+        //        credentials_p,
+        //        "標註原PDF文件");
+        //}
+
         private async Task<string> UploadPdfAsync(string localPdfPath)
         {
-            return await _fileManager.UploadSingleFileAsync(
+            string customUrl = "annotation/pdfs";
+            string hash = await _fileManager.ComputeFileSHA256Async(localPdfPath);
+            string targetFileName = $"{hash}.pdf";
+            string fullUrl = $"{source_pdf_base_url.TrimEnd('/')}/{customUrl}/{targetFileName}";
+
+            // 检查服务器是否已存在
+            if (await _fileManager.FileExistsOnServerAsync(fullUrl, credentials_l, credentials_p))
+            {
+                StatusText = $"PDF 已存在於伺服器，略過上傳：{Path.GetFileName(localPdfPath)}";
+                return fullUrl;
+            }
+
+            // 上传
+            return await _fileManager.UploadSingleFileWithFileNameAsync(
                 localPdfPath,
-                source_pdf_base_url,
-                "annotation/pdfs",
+                source_pdf_base_url.TrimEnd('/'),
+                customUrl,
+                targetFileName,
                 credentials_l,
                 credentials_p,
                 "標註原PDF文件");
         }
-
         private async Task<string> UploadImageAsync(string pdfPath, int pageIndex)
         {
             byte[] pngBytes = await RenderPdfPageToPngAsync(pdfPath, pageIndex);
 
+            // 计算哈希
+            string hash = _fileManager.ComputeBytesSHA256(pngBytes);
+            string targetFileName = $"{hash}.png";
+
+            var imageBaseUri = new Uri(annotation_image_base_url);
+            string baseUrl = imageBaseUri.GetLeftPart(UriPartial.Authority);
+            string customUrl = imageBaseUri.AbsolutePath.Trim('/');
+            string fullUrl = $"{baseUrl}/{customUrl}/{targetFileName}";
+
+            // 检查是否存在
+            if (await _fileManager.FileExistsOnServerAsync(fullUrl, credentials_l, credentials_p))
+            {
+                StatusText = $"圖片已存在於伺服器，略過上傳：{Path.GetFileNameWithoutExtension(pdfPath)} 第 {pageIndex + 1} 頁";
+                return fullUrl;
+            }
+
+            // 写入临时文件并上传
             string tempFile = Path.GetTempFileName() + ".png";
             await File.WriteAllBytesAsync(tempFile, pngBytes);
             try
             {
-                var imageBaseUri = new Uri(annotation_image_base_url);
-                string baseUrl = imageBaseUri.GetLeftPart(UriPartial.Authority);
-                string customUrl = imageBaseUri.AbsolutePath.TrimEnd('/');
-
-                return await _fileManager.UploadSingleFileAsync(
+                return await _fileManager.UploadSingleFileWithFileNameAsync(
                     tempFile,
                     baseUrl,
                     customUrl,
+                    targetFileName,
                     credentials_l,
                     credentials_p,
                     "image");
             }
             finally
             {
-                if (File.Exists(tempFile))
-                    File.Delete(tempFile);
+                if (File.Exists(tempFile)) File.Delete(tempFile);
             }
         }
+        //private async Task<string> UploadImageAsync(string pdfPath, int pageIndex)
+        //{
+        //    byte[] pngBytes = await RenderPdfPageToPngAsync(pdfPath, pageIndex);
+
+        //    string tempFile = Path.GetTempFileName() + ".png";
+        //    await File.WriteAllBytesAsync(tempFile, pngBytes);
+        //    try
+        //    {
+        //        var imageBaseUri = new Uri(annotation_image_base_url);
+        //        string baseUrl = imageBaseUri.GetLeftPart(UriPartial.Authority);
+        //        string customUrl = imageBaseUri.AbsolutePath.TrimEnd('/');
+
+        //        return await _fileManager.UploadSingleFileAsync(
+        //            tempFile,
+        //            baseUrl,
+        //            customUrl,
+        //            credentials_l,
+        //            credentials_p,
+        //            "image");
+        //    }
+        //    finally
+        //    {
+        //        if (File.Exists(tempFile))
+        //            File.Delete(tempFile);
+        //    }
+        //}
 
         private async Task<byte[]> RenderPdfPageToPngAsync(string pdfPath, int pageIndex)
         {

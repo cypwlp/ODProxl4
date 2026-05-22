@@ -3,6 +3,7 @@ using ODProxl.Global.Services;
 using ODProxl.Utils.HttpService;
 using RestSharp;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ODProxl.Global.Servcies.impls
@@ -202,6 +203,61 @@ namespace ODProxl.Global.Servcies.impls
                 Parameters = createFileDto
             };
             await _httpRestClient.ExecuteAsync<FileDto>(request);
+        }
+
+        public async Task<string> UploadSingleFileWithFileNameAsync(string localFilePath, string baseUrl, string customUrl,
+    string fileName, string credentials_l, string credentials_p, string fileType)
+        {
+            // 目录 URL 规范化（与原有逻辑一致）
+            string fullDirUrl = $"{baseUrl.TrimEnd('/')}/{customUrl.Trim('/')}/";
+            var requestUrl = $"{fullDirUrl}{fileName}";
+
+            // 先尝试上传
+            bool success = await TryPutFileAsync(requestUrl, localFilePath, credentials_l, credentials_p);
+            if (!success)
+            {
+                // 失败则建目录后重试
+                await EnsureDirectoryExistsRecursiveAsync(fullDirUrl, credentials_l, credentials_p);
+                success = await TryPutFileAsync(requestUrl, localFilePath, credentials_l, credentials_p);
+                if (!success)
+                    throw new HttpRequestException($"无法上传文件到 {requestUrl}");
+            }
+
+            // 返回完整 URL（与原方法一致）
+            string singleFileUrl = baseUrl + $"{customUrl}/{fileName}";
+            await SaveSingleFileAsync(singleFileUrl, fileType);
+            return singleFileUrl;
+        }
+
+        public async Task<string> ComputeFileSHA256Async(string filePath)
+        {
+            using var stream = File.OpenRead(filePath);
+            using var sha256 = SHA256.Create();
+            byte[] hashBytes = await sha256.ComputeHashAsync(stream);
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
+
+        public string ComputeBytesSHA256(byte[] data)
+        {
+            using var sha256 = SHA256.Create();
+            byte[] hashBytes = sha256.ComputeHash(data);
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
+
+        public async Task<bool> FileExistsOnServerAsync(string url, string credentials_l, string credentials_p)
+        {
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Head, url);
+                var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{credentials_l}:{credentials_p}"));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authToken);
+                var response = await _httpClient.SendAsync(request);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task SaveFileAsync(IEnumerable<string> fileUrls, string fileType)
