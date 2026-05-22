@@ -17,14 +17,12 @@ public partial class AnnotationPageViewModel : BindableBase, INavigationAware, I
     private readonly IConfigManager _configManager;
     private readonly IEventAggregator _eventAggregator;
     private readonly IFileManager _fileManager;
-    private string _imagesBaseUrl;
-    private string _labelsBaseUrl;
-    private string _pdfBaseUrl;
+
     private string source_pdf_base_url;
     private string credentials_l;
     private string credentials_p;
     private string annotation_image_base_url;
-    private string annotation_label_base_url;
+    //private string annotation_label_base_url;
 
     private Image? _imageControl;
     private Canvas? _canvas;
@@ -98,34 +96,23 @@ public partial class AnnotationPageViewModel : BindableBase, INavigationAware, I
 
         _configManager.ConfigChanged += () =>
         {
-            _imagesBaseUrl = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
-            _labelsBaseUrl = _configManager.GetValue("source_pdf_base_path") ?? string.Empty;
-            _pdfBaseUrl = _configManager.GetValue("pdf_base_url") ?? BuildPdfBaseUrl();
-            source_pdf_base_url = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
-            credentials_l = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
-            credentials_p = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
+
+            source_pdf_base_url = _configManager.GetValue("source_pdf_base_path") ?? string.Empty;
+            credentials_l = _configManager.GetValue("credentials_l") ?? string.Empty;
+            credentials_p = _configManager.GetValue("credentials_p") ?? string.Empty;
             annotation_image_base_url = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
-            annotation_label_base_url = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
+            //annotation_label_base_url = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
         };
-        _imagesBaseUrl = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
-        _labelsBaseUrl = _configManager.GetValue("source_pdf_base_path") ?? string.Empty;
-        _pdfBaseUrl = _configManager.GetValue("pdf_base_url") ?? BuildPdfBaseUrl();
-        source_pdf_base_url = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
-        credentials_l = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
-        credentials_p = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
+        source_pdf_base_url = _configManager.GetValue("source_pdf_base_path") ?? string.Empty;
+        credentials_l = _configManager.GetValue("credentials_l") ?? string.Empty;
+        credentials_p = _configManager.GetValue("credentials_p") ?? string.Empty;
         annotation_image_base_url = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
-        annotation_label_base_url = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
+        //annotation_label_base_url = _configManager.GetValue("annotation_image_base_url") ?? string.Empty;
 
         InitializeCommands();
     }
 
-    private string BuildPdfBaseUrl()
-    {
-        if (string.IsNullOrEmpty(_imagesBaseUrl)) return string.Empty;
-        var uri = new Uri(_imagesBaseUrl);
-        var baseUri = uri.GetLeftPart(UriPartial.Authority);
-        return $"{baseUri}pdfs/";
-    }
+
 
     public void SetTopLevel(TopLevel? topLevel) => _topLevel = topLevel;
     public void SetControls(Image? image, Canvas? canvas)

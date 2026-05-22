@@ -2,6 +2,8 @@
 using ODProxl.ClientServices;
 using ODProxl.ClientServices.Impls;
 using ODProxl.Dialogs;
+using ODProxl.Global.Servcies;
+using ODProxl.Global.Servcies.impls;
 using ODProxl.Global.Services;
 using ODProxl.Global.Services.impls;
 using ODProxl.Pages;
@@ -23,6 +25,7 @@ namespace ODProxl
         {
             containerRegistry.RegisterSingleton<IAuthService, AuthService>();
             containerRegistry.RegisterSingleton<IConfigManager, ConfigManager>();
+            containerRegistry.RegisterSingleton<IFileManager, FileManager>();
             containerRegistry.RegisterSingleton<ISignalRService, SignalRService>();
             containerRegistry.RegisterSingleton<HttpClient>();
             containerRegistry.RegisterSingleton<IHttpRestClient>(sp => new HttpRestClient(

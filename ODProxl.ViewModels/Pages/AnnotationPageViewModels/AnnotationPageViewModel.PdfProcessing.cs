@@ -2,10 +2,7 @@
 using Avalonia.Threading;
 using Docnet.Core;
 using Docnet.Core.Models;
-using ODProxl.Utils.HttpService;
-using RestSharp;
 using SkiaSharp;
-using System.Text;
 
 namespace ODProxl.ViewModels.Pages.AnnotationPageViewModels
 {
@@ -37,40 +34,13 @@ namespace ODProxl.ViewModels.Pages.AnnotationPageViewModels
                     AllowMultiple = true,
                     FileTypeFilter = new[]
                     {
-                    new FilePickerFileType("PDF 文件") { Patterns = new[] { "*.pdf" } }
+                        new FilePickerFileType("PDF 文件") { Patterns = new[] { "*.pdf" } }
                     }
                 });
             if (files.Count > 0)
             {
                 var pdfPaths = files.Select(f => f.Path.LocalPath).ToArray();
                 await ProcessPdfFilesAsync(pdfPaths);
-            }
-        }
-
-        private async Task EnsureLabelFolderExistsAsync()
-        {
-            string folderUrl = $"{_labelsBaseUrl}{CurrentModelFolder}/";
-            var headRequest = new HttpRequestMessage(HttpMethod.Head, folderUrl);
-            var headResponse = await _httpClient.SendAsync(headRequest);
-            if (headResponse.IsSuccessStatusCode)
-                return;
-            var mkcolMethod = new HttpMethod("MKCOL");
-            var mkcolRequest = new HttpRequestMessage(mkcolMethod, folderUrl);
-            var mkcolResponse = await _httpClient.SendAsync(mkcolRequest);
-            if (mkcolResponse.IsSuccessStatusCode)
-            {
-                StatusText = $"已建立标注文件夹：{CurrentModelFolder}";
-                return;
-            }
-            var placeholderContent = new StringContent("[]", Encoding.UTF8, "application/json");
-            var putResponse = await _httpClient.PutAsync(folderUrl + ".placeholder", placeholderContent);
-            if (putResponse.IsSuccessStatusCode)
-            {
-                StatusText = $"已通过占位文件建立文件夹：{CurrentModelFolder}";
-            }
-            else
-            {
-                StatusText = $"警告：无法创建文件夹 {CurrentModelFolder}，HTTP {putResponse.StatusCode}。后续保存可能失败。";
             }
         }
 
@@ -101,10 +71,11 @@ namespace ODProxl.ViewModels.Pages.AnnotationPageViewModels
                 CurrentImageIndex = -1;
                 StatusText = "正在處理 PDF 文件...";
             });
-            await EnsureLabelFolderExistsAsync();
+
             int totalProcessed = 0;
             foreach (var pdfPath in pdfPaths)
             {
+                // 上传原始 PDF（使用 IFileManager，不再检查重复）
                 await UploadOriginalPdfAsync(pdfPath);
 
                 var pdfFileName = System.IO.Path.GetFileNameWithoutExtension(pdfPath);
@@ -116,69 +87,57 @@ namespace ODProxl.ViewModels.Pages.AnnotationPageViewModels
                 }
                 catch (Exception ex)
                 {
-                    await Dispatcher.UIThread.InvokeAsync(() => StatusText = $"無法讀取 PDF：{System.IO.Path.GetFileName(pdfPath)} - {ex.Message}");
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                        StatusText = $"無法讀取 PDF：{System.IO.Path.GetFileName(pdfPath)} - {ex.Message}");
                     continue;
                 }
+
                 for (int page = 0; page < pageCount; page++)
                 {
                     string imageName = $"{pdfFileName}_p{(page + 1):D3}.png";
-                    string imageHttpUrl = _imagesBaseUrl + imageName;
-                    bool existsOnServer = await ImageExistsOnServerAsync(imageHttpUrl);
-                    if (existsOnServer)
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                        StatusText = $"正在處理圖片: {imageName}");
+
+                    // 直接渲染并上传，获取实际 URL（GUID 前缀）
+                    string uploadedUrl = await UploadImageAsync(pdfPath, page);
+
+                    await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        ExpectedImagePaths.Add(uploadedUrl);
+                        totalProcessed++;
+                        StatusText = $"已上傳圖片 {imageName} ({totalProcessed} 張)";
+                        if (ExpectedImagePaths.Count == 1)
                         {
-                            ExpectedImagePaths.Add(imageHttpUrl);
-                            totalProcessed++;
-                            StatusText = $"已從伺服器載入圖片 {imageName} ({totalProcessed} 張)";
-                            if (ExpectedImagePaths.Count == 1)
-                            {
-                                CurrentImageIndex = 0;
-                                _ = LoadImageAsync(0);
-                            }
-                        });
-                    }
-                    else
-                    {
-                        await Dispatcher.UIThread.InvokeAsync(() => StatusText = $"正在轉換 300 DPI 圖片: {imageName}");
-                        byte[] pngBytes = await RenderPdfPageToPngAsync(pdfPath, page);
-                        string uploadedUrl = await UploadImageWithFileManagerAsync(pngBytes, imageHttpUrl, "images");
-                        await Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            ExpectedImagePaths.Add(uploadedUrl);
-                            totalProcessed++;
-                            StatusText = $"已轉換並上傳圖片 {imageName} ({totalProcessed} 張)";
-                            if (ExpectedImagePaths.Count == 1)
-                            {
-                                CurrentImageIndex = 0;
-                                _ = LoadImageAsync(0);
-                            }
-                        });
-                    }
+                            CurrentImageIndex = 0;
+                            _ = LoadImageAsync(0);
+                        }
+                    });
                 }
             }
-            await Dispatcher.UIThread.InvokeAsync(() => StatusText = $"處理完成，共 {totalProcessed} 張圖片（已自動同步至伺服器）");
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+                StatusText = $"處理完成，共 {totalProcessed} 張圖片（已自動同步至伺服器）");
         }
 
         private async Task UploadOriginalPdfAsync(string pdfPath)
         {
-            if (string.IsNullOrEmpty(_pdfBaseUrl))
+            if (string.IsNullOrEmpty(source_pdf_base_url))
             {
-                StatusText = "未設定 PDF 上傳位址 (pdf_base_url)，略過上傳原始 PDF";
+                StatusText = "未設定 PDF 上傳位址 (source_pdf_base_path)，略過上傳原始 PDF";
                 return;
             }
-            string pdfFileName = System.IO.Path.GetFileName(pdfPath);
-            string targetPdfUrl = _pdfBaseUrl + pdfFileName;
-            bool exists = await PdfExistsOnServerAsync(targetPdfUrl);
-            if (exists)
+            if (string.IsNullOrEmpty(credentials_l) || string.IsNullOrEmpty(credentials_p))
             {
-                StatusText = $"PDF 已存在伺服器：{pdfFileName}";
+                StatusText = "缺少上傳憑證，無法上傳 PDF";
                 return;
             }
+
+            string pdfFileName = Path.GetFileName(pdfPath);
             try
             {
-                string uploadedUrl = await UploadPdfWithFileManagerAsync(pdfPath, targetPdfUrl, "pdfs");
+                string uploadedUrl = await UploadPdfAsync(pdfPath);
                 StatusText = $"已上傳原始 PDF：{pdfFileName} → {uploadedUrl}";
+                // 注意：IFileManager 内部已保存文件元数据，此处无需再调用 SaveFileMetadataAsync
             }
             catch (Exception ex)
             {
@@ -186,40 +145,41 @@ namespace ODProxl.ViewModels.Pages.AnnotationPageViewModels
             }
         }
 
-        private async Task<bool> PdfExistsOnServerAsync(string pdfUrl)
+        private async Task<string> UploadPdfAsync(string localPdfPath)
         {
-            try
-            {
-                var request = new HttpRequestMessage(HttpMethod.Head, pdfUrl);
-                var response = await _httpClient.SendAsync(request);
-                return response.IsSuccessStatusCode;
-            }
-            catch
-            {
-                return false;
-            }
+            return await _fileManager.UploadSingleFileAsync(
+                localPdfPath,
+                source_pdf_base_url,
+                "annotation/pdfs",
+                credentials_l,
+                credentials_p,
+                "標註原PDF文件");
         }
 
-        private async Task<string> UploadPdfWithFileManagerAsync(string localPdfPath, string expectedUrl, string customPath)
+        private async Task<string> UploadImageAsync(string pdfPath, int pageIndex)
         {
-            var uri = new Uri(expectedUrl);
-            string baseUrl = uri.GetLeftPart(UriPartial.Authority);
-            string uploadedUrl = await _fileManager.UploadFileAsync(localPdfPath, baseUrl, customPath);
-            await SaveFileMetadataAsync(uploadedUrl, "pdf");
-            return uploadedUrl;
-        }
+            byte[] pngBytes = await RenderPdfPageToPngAsync(pdfPath, pageIndex);
 
-        private async Task<bool> ImageExistsOnServerAsync(string imageHttpUrl)
-        {
+            string tempFile = Path.GetTempFileName() + ".png";
+            await File.WriteAllBytesAsync(tempFile, pngBytes);
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Head, imageHttpUrl);
-                var response = await _httpClient.SendAsync(request);
-                return response.IsSuccessStatusCode;
+                var imageBaseUri = new Uri(annotation_image_base_url);
+                string baseUrl = imageBaseUri.GetLeftPart(UriPartial.Authority);
+                string customUrl = imageBaseUri.AbsolutePath.TrimEnd('/');
+
+                return await _fileManager.UploadSingleFileAsync(
+                    tempFile,
+                    baseUrl,
+                    customUrl,
+                    credentials_l,
+                    credentials_p,
+                    "image");
             }
-            catch
+            finally
             {
-                return false;
+                if (File.Exists(tempFile))
+                    File.Delete(tempFile);
             }
         }
 
@@ -240,46 +200,6 @@ namespace ODProxl.ViewModels.Pages.AnnotationPageViewModels
                 encoded.SaveTo(ms);
                 return ms.ToArray();
             });
-        }
-
-        private async Task<string> UploadImageWithFileManagerAsync(byte[] pngBytes, string expectedUrl, string customPath)
-        {
-            string tempFilePath = Path.GetTempFileName() + ".png";
-            try
-            {
-                await File.WriteAllBytesAsync(tempFilePath, pngBytes);
-                var uri = new Uri(expectedUrl);
-                string baseUrl = uri.GetLeftPart(UriPartial.Authority);
-                string uploadedUrl = await _fileManager.UploadFileAsync(tempFilePath, baseUrl, customPath);
-                await SaveFileMetadataAsync(uploadedUrl, "image");
-                return uploadedUrl;
-            }
-            finally
-            {
-                if (File.Exists(tempFilePath))
-                    File.Delete(tempFilePath);
-            }
-        }
-
-        private async Task SaveFileMetadataAsync(string fileUrl, string fileType)
-        {
-            var uri = new Uri(fileUrl);
-            string fileName = uri.Segments[^1];
-            string fileExtension = Path.GetExtension(fileName)?.TrimStart('.');
-            var request = new ClientRequest
-            {
-                Url = "File",
-                Method = Method.Post,
-                ContentType = "application/json",
-                Parameters = new ClientDtos.CreateFileDto
-                {
-                    FileUrl = fileUrl,
-                    FileName = fileName,
-                    FileExtension = fileExtension,
-                    FileType = fileType
-                }
-            };
-            await _httpRestClient.ExecuteAsync<ClientDtos.FileDto>(request);
         }
     }
 }

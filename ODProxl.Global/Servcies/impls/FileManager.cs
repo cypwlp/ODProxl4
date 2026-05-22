@@ -1,7 +1,7 @@
-﻿
+﻿using ODProxl.ClientDtos;
 using ODProxl.Global.Services;
 using ODProxl.Utils.HttpService;
-using System.Collections.Concurrent;
+using RestSharp;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -12,164 +12,206 @@ namespace ODProxl.Global.Servcies.impls
         private readonly IConfigManager _configManager;
         private readonly IHttpRestClient _httpRestClient;
         private readonly HttpClient _httpClient;
-        private readonly SemaphoreSlim _uploadSemaphore = new(5); // 控制并发上传数量
+        private readonly SemaphoreSlim _uploadSemaphore = new(5);
+        private readonly HashSet<string> _createdDirectories = new();
+        private readonly object _dirLock = new();
 
-        // 使用 volatile 确保凭证更新的可见性
-        private volatile string _credentialsL;
-        private volatile string _credentialsP;
-
-        // 保留 FileUrl 以兼容旧调用（SaveFileAsync 依赖），但标注为 Obsolete
-        [Obsolete("此属性将被移除，请通过上传返回值直接传递文件URL")]
-        public string FileUrl { get; private set; }
+        private string _credentialsL;
+        private string _credentialsP;
 
         public FileManager(IConfigManager configManager, IHttpRestClient httpRestClient, HttpClient httpClient)
         {
-            _configManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            _httpRestClient = httpRestClient ?? throw new ArgumentNullException(nameof(httpRestClient));
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _configManager = configManager;
+            _httpRestClient = httpRestClient;
+            _httpClient = httpClient;
 
-            // 初始化凭证
-            (_credentialsL, _credentialsP) = LoadCredentials();
-
-            // 订阅配置变更事件
-            _configManager.ConfigChanged += OnConfigChanged;
-        }
-
-        /// <summary>
-        /// 上传单个文件，返回可访问的文件URL。
-        /// 方法结束时会自动更新 FileUrl 属性（已过时）。
-        /// </summary>
-        public async Task<string> UploadFileAsync(string localFilePath, string baseUrl, string customPath)
-        {
-            var fileUrl = await UploadFileInternalAsync(localFilePath, baseUrl, customPath).ConfigureAwait(false);
-            FileUrl = fileUrl; // 保持向后兼容
-            return fileUrl;
-        }
-
-        /// <summary>
-        /// 并发上传多个文件，通过信号量控制并发数。
-        /// 所有文件上传成功后才会返回；任意失败则抛出 AggregateException。
-        /// </summary>
-        public async Task UploadFilesAsync(IEnumerable<string> localFilePaths, string baseUrl, string customPath)
-        {
-            var paths = localFilePaths?.ToList() ?? throw new ArgumentNullException(nameof(localFilePaths));
-            if (paths.Count == 0) return;
-
-            var exceptions = new ConcurrentQueue<Exception>();
-            string lastFileUrl = null;
-
-            var tasks = paths.Select(async path =>
+            _configManager.ConfigChanged += () =>
             {
-                await _uploadSemaphore.WaitAsync().ConfigureAwait(false);
+                _credentialsL = _configManager.GetValue("credentials_l") ?? string.Empty;
+                _credentialsP = _configManager.GetValue("credentials_p") ?? string.Empty;
+            };
+            _credentialsL = _configManager.GetValue("credentials_l") ?? string.Empty;
+            _credentialsP = _configManager.GetValue("credentials_p") ?? string.Empty;
+        }
+
+        public async Task<string> UploadSingleFileAsync(string localFilePath, string baseUrl, string customUrl,
+            string credentials_l, string credentials_p, string fileType)
+        {
+            string fullDirUrl = $"{baseUrl.TrimEnd('/')}/{customUrl.Trim('/')}/";
+            var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(localFilePath)}";
+            var requestUrl = $"{fullDirUrl}{fileName}";
+            bool success = await TryPutFileAsync(requestUrl, localFilePath, credentials_l, credentials_p);
+            if (!success)
+            {
+                await EnsureDirectoryExistsRecursiveAsync(fullDirUrl, credentials_l, credentials_p);
+                success = await TryPutFileAsync(requestUrl, localFilePath, credentials_l, credentials_p);
+                if (!success)
+                    throw new HttpRequestException($"无法上传文件到 {requestUrl}，请检查服务器权限或路径是否正确。");
+            }
+            string singleFileUrl = baseUrl + $"{customUrl}/{fileName}";
+            await SaveSingleFileAsync(singleFileUrl, fileType);
+            return singleFileUrl;
+        }
+
+        private async Task<bool> TryPutFileAsync(string requestUrl, string localFilePath,
+            string credentials_l, string credentials_p)
+        {
+            try
+            {
+                using var fileStream = File.OpenRead(localFilePath);
+                using var content = new StreamContent(fileStream);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+
+                var request = new HttpRequestMessage(HttpMethod.Put, requestUrl) { Content = content };
+                request.Headers.Authorization = new AuthenticationHeaderValue(
+                    "Basic",
+                    Convert.ToBase64String(Encoding.ASCII.GetBytes($"{credentials_l}:{credentials_p}")));
+
+                var response = await _httpClient.SendAsync(request);
+                System.Diagnostics.Debug.WriteLine($"[FileManager] PUT {requestUrl} -> {(int)response.StatusCode} {response.ReasonPhrase}");
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[FileManager] PUT {requestUrl} 异常: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<IEnumerable<string>> UploadFilesAsync(
+            IEnumerable<string> localFilePaths, string baseUrl, string customUrl,
+            string credentials_l, string credentials_p, string fileType)
+        {
+            var tasks = localFilePaths.Select(async path =>
+            {
+                await _uploadSemaphore.WaitAsync();
                 try
                 {
-                    var url = await UploadFileInternalAsync(path, baseUrl, customPath).ConfigureAwait(false);
-                    lastFileUrl = url; // 简单记录最后一个（不保证顺序，仅用于兼容）
-                }
-                catch (Exception ex)
-                {
-                    exceptions.Enqueue(ex);
+                    return await UploadSingleFileAsync(path, baseUrl, customUrl,
+                        credentials_l, credentials_p, fileType);
                 }
                 finally
                 {
                     _uploadSemaphore.Release();
                 }
             });
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            if (!exceptions.IsEmpty)
-                throw new AggregateException("一个或多个文件上传失败。", exceptions);
-
-            // 更新 FileUrl 为最后一个成功上传的URL（保持向后兼容）
-            if (lastFileUrl != null)
-                FileUrl = lastFileUrl;
+            return await Task.WhenAll(tasks);
         }
 
-        /// <summary>
-        /// 将文件元数据保存到后端服务。依赖 FileUrl 属性（即将弃用）。
-        /// </summary>
-        public async Task SaveFileAsync(string fileType)
+        private async Task EnsureDirectoryExistsRecursiveAsync(string directoryUrl, string credentials_l, string credentials_p)
         {
-            if (string.IsNullOrWhiteSpace(FileUrl))
-                throw new InvalidOperationException("FileUrl 尚未设置，请先上传文件。");
+            if (!directoryUrl.EndsWith("/"))
+                directoryUrl += "/";
+            lock (_dirLock)
+            {
+                if (_createdDirectories.Contains(directoryUrl))
+                    return;
+            }
+            if (await HeadDirectoryAsync(directoryUrl, credentials_l, credentials_p))
+            {
+                lock (_dirLock) _createdDirectories.Add(directoryUrl);
+                return;
+            }
+            string? parentDir = GetParentDirectoryUrl(directoryUrl);
+            if (parentDir != null && parentDir != directoryUrl)
+            {
+                await EnsureDirectoryExistsRecursiveAsync(parentDir, credentials_l, credentials_p);
+            }
+            if (await MkcolDirectoryAsync(directoryUrl, credentials_l, credentials_p))
+            {
+                lock (_dirLock) _createdDirectories.Add(directoryUrl);
+                return;
+            }
+            if (await CreateWithPlaceholderAsync(directoryUrl, credentials_l, credentials_p))
+            {
+                lock (_dirLock) _createdDirectories.Add(directoryUrl);
+                return;
+            }
+            System.Diagnostics.Debug.WriteLine($"[FileManager] 无法自动创建目录 {directoryUrl}，将依赖上传时服务器自动创建。");
+        }
 
-            // 安全解析URL，避免 Path 方法异常
-            var uri = new Uri(FileUrl);
-            string fileName = uri.Segments[^1];
-            string fileExtension = null;
-            int dotIndex = fileName.LastIndexOf('.');
-            if (dotIndex >= 0 && dotIndex < fileName.Length - 1)
-                fileExtension = fileName[(dotIndex + 1)..];
+        private async Task<bool> HeadDirectoryAsync(string url, string user, string pass)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Head, url);
+            AddBasicAuth(request, user, pass);
+            var response = await _httpClient.SendAsync(request);
+            System.Diagnostics.Debug.WriteLine($"[FileManager] HEAD {url} -> {(int)response.StatusCode}");
+            return response.IsSuccessStatusCode;
+        }
+
+        private async Task<bool> MkcolDirectoryAsync(string url, string user, string pass)
+        {
+            var request = new HttpRequestMessage(new HttpMethod("MKCOL"), url);
+            AddBasicAuth(request, user, pass);
+            var response = await _httpClient.SendAsync(request);
+            System.Diagnostics.Debug.WriteLine($"[FileManager] MKCOL {url} -> {(int)response.StatusCode}");
+            return response.IsSuccessStatusCode;
+        }
+
+        private async Task<bool> CreateWithPlaceholderAsync(string url, string user, string pass)
+        {
+            var placeholderUrl = $"{url}.odproxl_placeholder";
+            var content = new StringContent("", Encoding.UTF8);
+            var request = new HttpRequestMessage(HttpMethod.Put, placeholderUrl);
+            AddBasicAuth(request, user, pass);
+            request.Content = content;
+
+            var response = await _httpClient.SendAsync(request);
+            System.Diagnostics.Debug.WriteLine($"[FileManager] PLACEHOLDER PUT {placeholderUrl} -> {(int)response.StatusCode}");
+            if (response.IsSuccessStatusCode)
+            {
+                var delRequest = new HttpRequestMessage(HttpMethod.Delete, placeholderUrl);
+                AddBasicAuth(delRequest, user, pass);
+                await _httpClient.SendAsync(delRequest);
+                return true;
+            }
+            return false;
+        }
+
+        private string? GetParentDirectoryUrl(string url)
+        {
+            string trimmed = url.TrimEnd('/');
+            int lastSlash = trimmed.LastIndexOf('/');
+            if (lastSlash <= 0) return null;
+            return trimmed.Substring(0, lastSlash + 1);
+        }
+
+        private void AddBasicAuth(HttpRequestMessage request, string username, string password)
+        {
+            var token = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", token);
+        }
+
+        private async Task SaveSingleFileAsync(string SingleFileUrl, string fileType)
+        {
+            var fileName = Path.GetFileName(SingleFileUrl);
+            var fileExtension = Path.GetExtension(SingleFileUrl)?.TrimStart('.');
+            var createFileDto = new CreateFileDto
+            {
+                FileName = fileName,
+                FileType = fileType,
+                FileExtension = fileExtension,
+                FileUrl = SingleFileUrl
+            };
 
             var request = new ClientRequest
             {
                 Url = "File",
-                Method = RestSharp.Method.Post,
+                Method = Method.Post,
                 ContentType = "application/json",
-                Parameters = new ClientDtos.CreateFileDto
-                {
-                    FileUrl = FileUrl,
-                    FileName = fileName,
-                    FileExtension = fileExtension,
-                    FileType = fileType
-                }
+                Parameters = createFileDto
             };
-
-            await _httpRestClient.ExecuteAsync<ClientDtos.FileDto>(request).ConfigureAwait(false);
+            await _httpRestClient.ExecuteAsync<FileDto>(request);
         }
 
-        /// <summary>
-        /// 核心上传逻辑，返回生成的文件URL，不修改外部状态。
-        /// </summary>
-        private async Task<string> UploadFileInternalAsync(string localFilePath, string baseUrl, string customPath)
+        public async Task SaveFileAsync(IEnumerable<string> fileUrls, string fileType)
         {
-            if (!File.Exists(localFilePath))
-                throw new FileNotFoundException($"本地文件不存在: {localFilePath}");
-
-            // 安全的URL拼接
-            var baseUri = new Uri(baseUrl.TrimEnd('/') + "/");
-            var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(localFilePath)}";
-            var requestUri = new Uri(baseUri, $"{customPath.Trim('/')}/{fileName}");
-
-            using var fileStream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
-            using var content = new StreamContent(fileStream);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-
-            using var request = new HttpRequestMessage(HttpMethod.Put, requestUri)
-            {
-                Content = content
-            };
-
-            // 使用UTF8编码避免非ASCII字符问题
-            var credentials = $"{_credentialsL}:{_credentialsP}";
-            request.Headers.Authorization = new AuthenticationHeaderValue(
-                "Basic",
-                Convert.ToBase64String(Encoding.UTF8.GetBytes(credentials))
-            );
-
-            var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            return requestUri.ToString();
-        }
-
-        private (string l, string p) LoadCredentials()
-        {
-            return (
-                _configManager.GetValue("credentials_l"),
-                _configManager.GetValue("credentials_p")
-            );
-        }
-
-        private void OnConfigChanged()
-        {
-            (_credentialsL, _credentialsP) = LoadCredentials();
+            foreach (var fileUrl in fileUrls)
+                await SaveSingleFileAsync(fileUrl, fileType);
         }
 
         public void Dispose()
         {
-            _configManager.ConfigChanged -= OnConfigChanged;
             _uploadSemaphore?.Dispose();
         }
     }

@@ -2,8 +2,9 @@
 {
     public interface IFileManager
     {
-        Task<string> UploadFileAsync(string localFilePath, string baseUrl, string customPath);
-        Task UploadFilesAsync(IEnumerable<string> localFilePaths, string baseUrl, string customPath);
-        Task SaveFileAsync(string fileType);
+        Task<string> UploadSingleFileAsync(string localFilePath, string baseUrl, string customUrl,
+                                            string credentials_l, string credentials_p, string fileType);
+        Task<IEnumerable<string>> UploadFilesAsync(IEnumerable<string> localFilePaths, string baseUrl,
+                                                   string customUrl, string credentials_l, string credentials_p, string fileType);
     }
 }
