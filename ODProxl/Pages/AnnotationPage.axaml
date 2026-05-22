@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="ODProxl.AnnotationPage"
+    x:Class="ODProxl.Pages.AnnotationPage"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -107,7 +107,7 @@
                         Height="48"
                         Command="{Binding OpenFileCommand}"
                         IconKind="FilePdfBox"
-                        ToolTipText="載入單一 PDF" />
+                        ToolTipText="載入PDF" />
 
 					<Separator
                         Height="1"

@@ -14,7 +14,7 @@
 		<PackageReference Include="Docnet.Core" />
 		<PackageReference Include="SkiaSharp" />
 		<PackageReference Include="TreeDataGrid.Avalonia" />
-		<PackageReference Include="WebDAVClient"/>
+		<PackageReference Include="WebDAVClient" />
 	</ItemGroup>
 
 	<ItemGroup>

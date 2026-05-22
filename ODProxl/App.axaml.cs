@@ -8,6 +8,7 @@ using ODProxl.Pages;
 using ODProxl.Utils.HttpService;
 using ODProxl.ViewModels.Dialogs;
 using ODProxl.ViewModels.Pages;
+using ODProxl.ViewModels.Pages.AnnotationPageViewModels;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Navigation.Regions;

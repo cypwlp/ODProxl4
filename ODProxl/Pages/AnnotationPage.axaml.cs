@@ -4,10 +4,10 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
-using ODProxl.ViewModels.Pages;
+using ODProxl.ViewModels.Pages.AnnotationPageViewModels;
 using System;
 
-namespace ODProxl;
+namespace ODProxl.Pages;
 
 public partial class AnnotationPage : UserControl
 {
@@ -59,6 +59,8 @@ public partial class AnnotationPage : UserControl
             vm.SetControls(image, canvas);
 
         vm.RequestResetZoom += ResetZoom;
+        var topLevel = TopLevel.GetTopLevel(this);
+        vm.SetTopLevel(topLevel);
     }
     #endregion
 
@@ -148,6 +150,15 @@ public partial class AnnotationPage : UserControl
     {
         if (DataContext is AnnotationPageViewModel vm)
             vm.FinishPolygonIfPossible();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        // 取得 TopLevel 並傳給 ViewModel
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (DataContext is AnnotationPageViewModel vm)
+            vm.SetTopLevel(topLevel);
     }
     #endregion
 
